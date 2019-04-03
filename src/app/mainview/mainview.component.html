@@ -4,7 +4,7 @@
         <g *ngIf="null != cities">
             <g *ngFor="let city of cities">
                 <g *ngIf="null != city.tags.population">
-                    <circle [attr.cx]="city.lon" [attr.cy]="city.lat" [attr.r]="city.tags.population/10000"/>
+                    <circle [attr.cx]="city.lon" [attr.cy]="city.lat" [attr.r]="city.tags.population/10000" />
                 </g>
             </g>
         </g>
@@ -39,6 +39,9 @@
                 <title>{{trafficInfo.trafficjam.description}}</title>
                 <polyline class="traffic-info" [appPolyline]="trafficInfo.feature.geometry.coordinates" first="{{trafficInfo.first}}" last="{{trafficInfo.last}}" />
             </g>
+        </g>
+        <g *ngIf="null != myLocation">
+            <circle class="me" [attr.cx]="myLocation.lon" [attr.cy]="myLocation.lat" [attr.r]="3" />
         </g>
     </g>
 </svg>

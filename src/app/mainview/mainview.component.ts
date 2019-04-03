@@ -8,6 +8,8 @@ import { AnwbObject, Location, TrafficJam, Radar, RoadWork } from '../services/a
 import { OverpassService } from '../services/overpass.service';
 import { Element } from '../services/overpass.model';
 import { ActivatedRoute, ParamMap } from '@angular/router';
+import { timer } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'app-mainview',
@@ -32,6 +34,7 @@ export class MainviewComponent implements OnInit {
     maxLon: number;
     maxLat: number;
     cities: Element[];
+    myLocation: Location;
 
     constructor(
         private nominatum: NominatumService,
@@ -49,8 +52,32 @@ export class MainviewComponent implements OnInit {
                 .subscribe(result => { this.fromLoc = result[0]; this.getRoute(); });
             this.nominatum.getLocation(this.to)
                 .subscribe(result => { this.toLoc = result[0]; this.getRoute(); });
-    });
-}
+        });
+    }
+
+    getMyLocation() {
+        timer(1000, 5000)
+            .pipe(
+                map(response => {
+                    navigator.geolocation.getCurrentPosition(position => {
+                        if (position.coords.accuracy < 2500) {
+                            this.myLocation = new Location();
+                            this.myLocation.lon = this.xTransform(this.route, position.coords.longitude);
+                            this.myLocation.lat = this.yTransform(this.route, position.coords.latitude);
+                        }
+                    });
+                })
+            )
+            .subscribe();
+    }
+
+    private xTransform(oro: OpenRouteObject, x: number): number {
+        return x * oro.scale + oro.xDif;
+    }
+
+    private yTransform(oro: OpenRouteObject, y: number): number {
+        return y * oro.scale + oro.yDif;
+    }
 
     getRoute() {
         if ((this.fromLoc != null) && (this.toLoc != null)) {
@@ -63,6 +90,7 @@ export class MainviewComponent implements OnInit {
                         this.getMap();
                     });
                     this.getCities();
+                    this.getMyLocation();
                 });
         }
     }

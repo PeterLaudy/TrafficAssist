@@ -51,6 +51,11 @@ circle.radar {
     animation: fade-in 1s ease-in;
 }
 
+circle.me {
+    fill: yellow;
+    animation: fade-in 1s ease-in;
+}
+
 line.radar {
     stroke-linecap: round;
     stroke: red;
