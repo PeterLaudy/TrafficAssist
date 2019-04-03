@@ -1,0 +1,72 @@
+div {
+    margin: 0px;
+    padding: 0px;
+    position: absolute;
+}
+
+svg {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    position: absolute;
+    display: block;
+    background-color: transparant;
+}
+
+@keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes grow {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+polyline {
+    stroke-linecap: round;
+    fill: none;
+}
+
+polyline.route {
+    stroke: blue;
+    stroke-width: 1px;
+    animation: fade-in 1s ease-out;
+}
+
+polyline.traffic-info {
+    stroke: red;
+    stroke-width: 1.5px;
+    animation: fade-in 1s ease-out;
+}
+
+circle {
+    fill: darkgoldenrod;
+    animation: grow 1s ease-out;
+}
+
+circle.radar {
+    fill: green;
+    animation: fade-in 1s ease-in;
+}
+
+line.radar {
+    stroke-linecap: round;
+    stroke: red;
+    stroke-width: 3px;
+    animation: fade-in 1s ease-in;
+}
+
+path {
+    fill: red;
+    animation: fade-in-delayed 3s ease-in;
+}
+
+text {
+    fill: white;
+    font-family: Arial;
+    font-size: 5px;
+    font-variant-caps: small-caps;
+    animation: fade-in 1s ease-in;
+}

@@ -1,0 +1,17 @@
+input {
+    display: block;
+    width: 90%;
+    height: 5%;
+    left: 5%;
+    position: absolute;
+    font-size: calc(100%);
+    padding-left: 1%;
+}
+
+input.from {
+    top: 30%;
+}
+
+input.to {
+    top: 65%;
+}
