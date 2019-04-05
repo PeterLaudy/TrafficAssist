@@ -15,7 +15,7 @@ export class OpenrouteService {
     }
 
     private async getAPIKey() {
-        await this.http.get<any>('/assets/openrouteservice.key')
+        await this.http.get<any>('assets/openrouteservice.key')
             .subscribe(result => {
                 this.key = result.key;
             });
