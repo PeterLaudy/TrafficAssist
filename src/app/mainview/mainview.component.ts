@@ -34,7 +34,7 @@ export class MainviewComponent implements OnInit {
     maxLon: number;
     maxLat: number;
     cities: Element[];
-    myLocation: Location;
+    myLocation: AccurateLocation;
 
     constructor(
         private nominatum: NominatumService,
@@ -55,28 +55,29 @@ export class MainviewComponent implements OnInit {
         });
     }
 
-    getMyLocation() {
-        timer(1000, 5000)
-            .pipe(
-                map(response => {
-                    navigator.geolocation.getCurrentPosition(position => {
-                        if (position.coords.accuracy < 2500) {
-                            this.myLocation = new Location();
-                            this.myLocation.lon = this.xTransform(this.route, position.coords.longitude);
-                            this.myLocation.lat = this.yTransform(this.route, position.coords.latitude);
-                        }
-                    });
-                })
-            )
-            .subscribe();
-    }
+    public toggleFullscreen() {
+        const doc: any = window.document as Document & {
+            exitFullscreen: any;
+            mozCancelFullScreen: any;
+            webkitExitFullscreen: any;
+            msExitFullscreen: any;
+        };
+        const fsElement = document.getElementById('fullscreen') as HTMLElement & {
+            requestFullscreen: any;
+            mozRequestFullScreen: any;
+            webkitRequestFullscreen: any;
+            msRequestFullscreen: any;
+        };
 
-    private xTransform(oro: OpenRouteObject, x: number): number {
-        return x * oro.scale + oro.xDif;
-    }
+        const reqFS = fsElement.requestFullscreen || fsElement.mozRequestFullScreen ||
+                      fsElement.webkitRequestFullscreen || fsElement.msRequestFullscreen;
+        const cancelFS = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
 
-    private yTransform(oro: OpenRouteObject, y: number): number {
-        return y * oro.scale + oro.yDif;
+        if (doc.fullscreenElement || doc.mozFullScreenElement || doc.webkitFullscreenElement || doc.msFullscreenElement) {
+            cancelFS.call(doc);
+        } else {
+            cancelFS.call(fsElement);
+        }
     }
 
     getRoute() {
@@ -85,24 +86,25 @@ export class MainviewComponent implements OnInit {
                 [this.fromLoc.lon, this.fromLoc.lat], [this.toLoc.lon, this.toLoc.lat])
                 .subscribe(result => {
                     this.route = result;
-                    this.anwb.getTraficInfo(this.route).subscribe(trafic => {
-                        this.anwbInfo = trafic;
-                        this.getMap();
-                    });
+                    this.startGettingANWBInfo();
+                    this.getMapSize();
                     this.getCities();
-                    this.getMyLocation();
+                    this.startGettingMyLocation();
                 });
         }
     }
 
-    getCities() {
-        this.overpass.getCities(this.route)
-        .subscribe(result => {
-            this.cities = result;
+    private startGettingANWBInfo() {
+        timer(1000, 30000).subscribe(response => {
+            this.anwb.getTraficInfo(this.route).subscribe(trafic => {
+                this.anwbInfo = trafic;
+                this.combineRouteAndTraffic();
+                this.combineRouteAndRadar();
+            });
         });
     }
 
-    getMap() {
+    getMapSize() {
         if ((this.anwbInfo != null) && (this.route != null)) {
             this.minLon = this.route.bbox[0] / 100 - 0.05;
             this.minLat = this.route.bbox[1] / 100 - 0.05;
@@ -111,10 +113,39 @@ export class MainviewComponent implements OnInit {
             this.bbox = `${this.route.bbox[0]} ${this.route.bbox[1]} ` +
                         `${this.route.bbox[2] - this.route.bbox[0]} ${this.route.bbox[3] - this.route.bbox[1]}`;
             this.transform = `translate(0, ${(this.route.bbox[1] * 2) + (this.route.bbox[3] - this.route.bbox[1])}) scale(1,-1)`;
-
-            this.combineRouteAndTraffic();
-            this.combineRouteAndRadar();
         }
+    }
+
+    getCities() {
+        this.overpass.getCities(this.route).subscribe(result => { this.cities = result; });
+    }
+
+    startGettingMyLocation() {
+        timer(1000, 5000).subscribe(response => {
+            navigator.geolocation.getCurrentPosition(position => {
+                if (position.coords.accuracy < 2500) {
+                    const loc = new Location();
+                    loc.lon = this.xTransform(this.route, position.coords.longitude);
+                    loc.lat = this.yTransform(this.route, position.coords.latitude);
+                    this.myLocation = new AccurateLocation(loc, this.metersTransform(this.route, position.coords.accuracy));
+                }
+            });
+        });
+    }
+
+    private metersTransform(oro: OpenRouteObject, m: number): number {
+        m /= (40075000 / 360);
+        return m * oro.scale;
+    }
+
+    private xTransform(oro: OpenRouteObject, x: number): number {
+        // x * (40075 / 360) km
+        return x * oro.scale + oro.xDif;
+    }
+
+    private yTransform(oro: OpenRouteObject, y: number): number {
+        // 40075 * cos(Math.PI * y / 180) / 360 km
+        return y * oro.scale + oro.yDif;
     }
 
     combineRouteAndTraffic() {
@@ -208,4 +239,8 @@ export class MainviewComponent implements OnInit {
 
 export class TrafficInfo {
     constructor(public trafficjam: TrafficJam, public feature: Feature, public first: number, public last: number) { }
+}
+
+export class AccurateLocation {
+    constructor(public loc: Location, public accuracy: number) { }
 }

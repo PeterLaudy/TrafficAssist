@@ -1,6 +1,13 @@
-div {
+div.topicons {
     margin: 0px;
     padding: 0px;
+    position: absolute;
+}
+
+div.bottomicons {
+    margin: 0px;
+    padding: 0px;
+    top: calc(100% - 64px);
     position: absolute;
 }
 
@@ -53,7 +60,11 @@ circle.radar {
 
 circle.me {
     fill: yellow;
-    animation: fade-in 1s ease-in;
+}
+
+circle.accuracy {
+    fill: black;
+    opacity: 0.1;
 }
 
 line.radar {

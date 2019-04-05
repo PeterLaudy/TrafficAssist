@@ -41,15 +41,19 @@
             </g>
         </g>
         <g *ngIf="null != myLocation">
-            <circle class="me" [attr.cx]="myLocation.lon" [attr.cy]="myLocation.lat" [attr.r]="3" />
+            <circle class="me" [attr.cx]="myLocation.loc.lon" [attr.cy]="myLocation.loc.lat" [attr.r]="3" />
+            <circle class="accuracy" [attr.cx]="myLocation.loc.lon" [attr.cy]="myLocation.loc.lat" [attr.r]="myLocation.accuracy" />
         </g>
     </g>
 </svg>
-<div>
+<div class="topicons">
     <a [routerLink]="['/home', from, to]">
         <img src="assets/find64.png">
     </a>
     <a [routerLink]="['/main', to, from]">
         <img src="assets/replace64.png">
     </a>
+</div>
+<div class="bottomicons">
+    <img src="assets/fit_to_size64.png" (click)="toggleFullscreen();">
 </div>

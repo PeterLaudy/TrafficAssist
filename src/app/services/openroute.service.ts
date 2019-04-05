@@ -8,12 +8,23 @@ import { map } from 'rxjs/operators';
 
 export class OpenrouteService {
 
-    constructor(private http: HttpClient) { }
+    key: string;
+
+    constructor(private http: HttpClient) {
+        this.getAPIKey();
+    }
+
+    private async getAPIKey() {
+        await this.http.get<any>('/assets/openrouteservice.key')
+            .subscribe(result => {
+                this.key = result.key;
+            });
+    }
 
     getRoute(start: string[], destination: string[]): Observable<OpenRouteObject> {
         console.log(`Getting route for ${start} => ${destination}`);
         const url: string = `https://api.openrouteservice.org/v2/directions/driving-car?`
-            + `api_key=5b3ce3597851110001cf624870d42a4f0d90458ea18345269ea60843&start=`
+            + `api_key=${this.key}&start=`
             + `${start[0]},${start[1]}&end=${destination[0]},${destination[1]}`;
         return this.http.get<OpenRouteObject>(url)
             .pipe(
