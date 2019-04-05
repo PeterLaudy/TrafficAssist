@@ -76,7 +76,7 @@ export class MainviewComponent implements OnInit {
         if (doc.fullscreenElement || doc.mozFullScreenElement || doc.webkitFullscreenElement || doc.msFullscreenElement) {
             cancelFS.call(doc);
         } else {
-            cancelFS.call(fsElement);
+            reqFS.call(fsElement);
         }
     }
 
