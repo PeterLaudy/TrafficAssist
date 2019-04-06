@@ -9,6 +9,10 @@ export interface Element {
     lat: number;
     lon: number;
     tags: any;
+    kmX?: number;
+    kmY?: number;
+    svgX?: number;
+    svgY?: number;
 }
 
 export interface OverpassModel {

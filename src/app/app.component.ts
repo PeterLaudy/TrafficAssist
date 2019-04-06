@@ -4,7 +4,7 @@ import { NominatumService } from './services/nominatum.service';
 import { OpenrouteService } from './services/openroute.service';
 import { OpenRouteObject, Feature } from './services/openroute.model';
 import { AnwbService } from './services/anwb.service';
-import { AnwbObject, Location, TrafficJam } from './services/anwb.model';
+import { AnwbObject, GPSLocation, TrafficJam } from './services/anwb.model';
 import { PolylineDirective } from './directives/polyline.directive';
 import { OverpassService } from './services/overpass.service';
 import { Element } from './services/overpass.model';

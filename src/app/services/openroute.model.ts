@@ -1,4 +1,4 @@
-export interface Step {
+export class Step {
     distance: number;
     duration: number;
     type: number;
@@ -8,47 +8,51 @@ export interface Step {
     exit_number?: number;
 }
 
-export interface Segment {
+export class Segment {
     distance: number;
     duration: number;
     steps: Step[];
 }
 
-export interface Summary {
+export class Summary {
     distance: number;
     duration: number;
 }
 
-export interface Properties {
+export class Properties {
     segments: Segment[];
     summary: Summary;
     way_points: number[];
 }
 
-export interface Geometry {
+export class Geometry {
     coordinates: number[][];
     type: string;
 }
 
-export interface Feature {
+export class Feature {
     bbox: number[];
     type: string;
     properties: Properties;
     geometry: Geometry;
+    kmBBox?: number[];
+    svgBBox?: number[];
+    kmGeometry?: Geometry;
+    svgGeometry?: Geometry;
 }
 
-export interface Query {
+export class Query {
     coordinates: number[][];
     profile: string;
     format: string;
 }
 
-export interface Engine {
+export class Engine {
     version: string;
     build_date: Date;
 }
 
-export interface Metadata {
+export class Metadata {
     attribution: string;
     service: string;
     timestamp: number;
@@ -56,12 +60,11 @@ export interface Metadata {
     engine: Engine;
 }
 
-export interface OpenRouteObject {
+export class OpenRouteObject {
     type: string;
     features: Feature[];
     bbox: number[];
     metadata: Metadata;
-    scale?: number;
-    xDif?: number;
-    yDif?: number;
+    kmBBox?: number[];
+    svgBBox?: number[];
 }

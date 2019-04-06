@@ -4,13 +4,23 @@
         <g *ngIf="null != cities">
             <g *ngFor="let city of cities">
                 <g *ngIf="null != city.tags.population">
-                    <circle [attr.cx]="city.lon" [attr.cy]="city.lat" [attr.r]="city.tags.population/10000" />
+                    <circle [attr.cx]="city.svgX" [attr.cy]="city.svgY" [attr.r]="city.tags.population/10000" />
                 </g>
             </g>
         </g>
         <g *ngIf="null != radarInfos">
             <g *ngFor="let radarInfo of radarInfos">
-                <path [attr.transform]="radarInfo.svgPosition" d="M3800 3200c0,497 -403,900 -900,900l0 -200c387,0 700,-313 700,-700l200 0zm-900 -1300c718,0 1300,582 1300,1300 0,718 -582,1300 -1300,1300 -718,0 -1300,-582 -1300,-1300 0,-718 582,-1300 1300,-1300zm1800 0c220,0 400,180 400,400 0,221 -179,400 -400,400 -220,0 -400,-180 -400,-400 0,-221 179,-400 400,-400zm0 200c-110,0 -200,90 -200,200 0,111 89,200 200,200 110,0 200,-90 200,-200 0,-111 -89,-200 -200,-200zm-3000 -600c110,0 200,-90 200,-200 0,-220 180,-400 400,-400l1200 0c220,0 400,180 400,400 0,110 90,200 200,200l1000 0c220,0 400,180 400,400l0 2800c0,220 -180,400 -400,400l-4400 0c-220,0 -400,-180 -400,-400l0 -2800c0,-220 180,-400 400,-400l1000 0zm-1000 200c-111,0 -200,89 -200,200l0 2800c0,110 90,200 200,200l4400 0c110,0 200,-90 200,-200l0 -2800c0,-110 -90,-200 -200,-200l-1000 0c-220,0 -400,-180 -400,-400 0,-111 -89,-200 -200,-200l-1200 0c-111,0 -200,89 -200,200 0,220 -180,400 -400,400l-1000 0zm1600 -400l1200 0 0 200 -1200 0 0 -200zm600 800c-608,0 -1100,492 -1100,1100 0,608 492,1100 1100,1100 608,0 1100,-492 1100,-1100 0,-608 -492,-1100 -1100,-1100z"/>
+                <g [attr.transform]="radarInfo.svgPosition">
+                    <circle class="radar" cx="50.041" cy="53.256" r="9.513"/>
+                    <path class="radar" d="M86.778,24.2v-0.037H70.111v-2.792c0-2.056-1.667-3.722
+                        -3.722-3.722H33.611c-2.056,0-3.723,1.666-3.723,3.722v2.792H13.221V24.2
+                        c-2.056,0-3.721,1.666-3.721,3.722v50.669c0,2.056,1.665,3.722,3.721,3.722
+                        v0.037h73.557v-0.037c2.055,0,3.722-1.667,3.722-3.722V27.922C90.5,25.866,
+                        88.833,24.2,86.778,24.2zM50.247,72.542c-10.651,0-19.286-8.634-19.286-19.286
+                        c0-10.651,8.635-19.286,19.286-19.286c10.652,0,19.287,8.635,19.287,19.286
+                        C69.535,63.908,60.899,72.542,50.247,72.542z M85.513,39.145H70.773v-9.957
+                        h14.739V39.145z"/>
+                </g>
             </g>
         </g>
         <g *ngIf="null != route">
@@ -18,42 +28,43 @@
                 <g *ngFor="let segment of feature.properties.segments">
                     <g *ngFor="let step of segment.steps">
                         <title>{{step.name}}</title>
-                        <polyline class="route" [appPolyline]="feature.geometry.coordinates" first="{{step.way_points[0]}}" last="{{step.way_points[1]}}" />
+                        <polyline class="route" [appPolyline]="feature.svgGeometry.coordinates" first="{{step.way_points[0]}}" last="{{step.way_points[1]}}" />
                     </g>
                 </g>
             </g>
         </g>
         <g *ngIf="null != cities">
             <g *ngFor="let city of cities">
-                <text transform="scale(1,-1)" [attr.x]="city.lon" [attr.y]="-city.lat">{{city.tags.name}}</text>
+                <text transform="scale(1,-1)" [attr.x]="city.svgX" [attr.y]="-city.svgY">{{city.tags.name}}</text>
             </g>
         </g>
         <g *ngIf="null != radarInfos">
             <g *ngFor="let radarInfo of radarInfos">
-                <line class="radar" [attr.x1]="radarInfo.svgPosX1" [attr.y1]="radarInfo.svgPosY1"
-                                    [attr.x2]="radarInfo.svgPosX2" [attr.y2]="radarInfo.svgPosY2" />
+                <line class="radar" [attr.x1]="radarInfo.svgFromLoc.x" [attr.y1]="radarInfo.svgFromLoc.y"
+                                    [attr.x2]="radarInfo.svgToLoc.x" [attr.y2]="radarInfo.svgToLoc.y" />
             </g>
         </g>
         <g *ngIf="null != trafficInfos">
             <g *ngFor="let trafficInfo of trafficInfos">
                 <title>{{trafficInfo.trafficjam.description}}</title>
-                <polyline class="traffic-info" [appPolyline]="trafficInfo.feature.geometry.coordinates" first="{{trafficInfo.first}}" last="{{trafficInfo.last}}" />
+                <polyline class="traffic-info" [appPolyline]="trafficInfo.feature.svgGeometry.coordinates" first="{{trafficInfo.first}}" last="{{trafficInfo.last}}" />
             </g>
         </g>
         <g *ngIf="null != myLocation">
-            <circle class="me" [attr.cx]="myLocation.loc.lon" [attr.cy]="myLocation.loc.lat" [attr.r]="3" />
-            <circle class="accuracy" [attr.cx]="myLocation.loc.lon" [attr.cy]="myLocation.loc.lat" [attr.r]="myLocation.accuracy" />
+            <circle class="me" [attr.cx]="myLocation.svgLoc.x" [attr.cy]="myLocation.svgLoc.y" [attr.r]="3" />
+            <circle class="accuracy" [attr.cx]="myLocation.svgLoc.x" [attr.cy]="myLocation.svgLoc.y" [attr.r]="myLocation.accuracy" />
         </g>
     </g>
 </svg>
-<div class="topicons">
+<div class="icons">
     <a [routerLink]="['/home', from, to]">
-        <img src="assets/find64.png">
+        <img id="home" src="assets/home.png">
     </a>
     <a [routerLink]="['/main', to, from]">
-        <img src="assets/replace64.png">
+        <img id="reverse" src="assets/reverse.png">
     </a>
 </div>
-<div class="bottomicons">
-    <img src="assets/fit_to_size64.png" (click)="toggleFullscreen();">
+<div class="icons">
+    <img src="assets/full-screen.png" (click)="fullScreen.toggleFullscreen();">
+    <img id="demo" src="assets/demo.png" (click)="startDemo();">
 </div>

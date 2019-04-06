@@ -10,4 +10,8 @@ export class Nominatum {
     class: string;
     type: string;
     importance: number;
+    kmX?: number;
+    kmY?: number;
+    svgX?: number;
+    svgY?: number;
 }

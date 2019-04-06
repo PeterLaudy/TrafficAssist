@@ -10,6 +10,8 @@ import { PolylineDirective } from './directives/polyline.directive';
 import { OverpassService } from './services/overpass.service';
 import { MainviewComponent } from './mainview/mainview.component';
 import { HomeComponent } from './home/home.component';
+import { TalkToMeBaby } from './services/talktomebaby.service';
+import { FullScreen } from './services/full-screen.service';
 
 @NgModule({
     declarations: [
@@ -27,7 +29,9 @@ import { HomeComponent } from './home/home.component';
         NominatumService,
         OpenrouteService,
         AnwbService,
-        OverpassService
+        OverpassService,
+        TalkToMeBaby,
+        FullScreen
     ],
     bootstrap: [AppComponent]
 })

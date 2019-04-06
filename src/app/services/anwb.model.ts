@@ -1,6 +1,16 @@
-export class Location {
+export class GPSLocation {
     lat: number;
     lon: number;
+}
+
+export class KmLocation {
+    x: number;
+    y: number;
+}
+
+export class SvgLocation {
+    x: number;
+    y: number;
 }
 
 export class Event {
@@ -11,9 +21,9 @@ export class Event {
 export class TrafficJam {
     msgNr: string;
     from: string;
-    fromLoc: Location;
+    fromLoc: GPSLocation;
     to: string;
-    toLoc: Location;
+    toLoc: GPSLocation;
     location: string;
     segStart: string;
     segEnd: string;
@@ -24,14 +34,18 @@ export class TrafficJam {
     reason: string;
     description: string;
     events: Event[];
+    kmFromLoc?: KmLocation;
+    kmToLoc?: KmLocation;
+    svgFromLoc?: SvgLocation;
+    svgToLoc?: SvgLocation;
 }
 
 export class RoadWork {
     msgNr: string;
     from: string;
-    fromLoc: Location;
+    fromLoc: GPSLocation;
     to: string;
-    toLoc: Location;
+    toLoc: GPSLocation;
     location: string;
     segStart: string;
     segEnd: string;
@@ -42,15 +56,19 @@ export class RoadWork {
     reason: string;
     description: string;
     events: Event[];
+    kmFromLoc?: KmLocation;
+    kmToLoc?: KmLocation;
+    svgFromLoc?: SvgLocation;
+    svgToLoc?: SvgLocation;
 }
 
 export class Radar {
     msgNr: string;
     from: string;
-    fromLoc: Location;
+    fromLoc: GPSLocation;
     to: string;
-    toLoc: Location;
-    loc: Location;
+    toLoc: GPSLocation;
+    loc: GPSLocation;
     location: string;
     segStart: string;
     segEnd: string;
@@ -58,10 +76,12 @@ export class Radar {
     description: string;
     events: Event[];
     svgPosition?: string;
-    svgPosX1?: number;
-    svgPosY1?: number;
-    svgPosX2?: number;
-    svgPosY2?: number;
+    kmFromLoc?: KmLocation;
+    kmToLoc?: KmLocation;
+    kmLoc?: KmLocation;
+    svgFromLoc?: SvgLocation;
+    svgToLoc?: SvgLocation;
+    svgLoc?: SvgLocation;
 }
 
 export class Events {
