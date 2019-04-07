@@ -1,23 +1,31 @@
-import { GPSLocation, KmLocation, SvgLocation } from './services/anwb.model';
+import { GPSLocation, KmLocation, SvgLocation } from '../services/anwb.model';
+
 export class GPSConverter {
 
     // These variables are used to convert from km to SVG coordinates.
     // The SVG bounding box is -100, -100, 100, 100 (x1, y1, x2, y2).
+    // The boundingbox of the route is mapped to -85, -85, 85, 85.
+    // This way no important details end up right at the edge of the view.
     private scale: number;
     private xDif: number;
     private yDif: number;
-    private kmBBox: number[]
-    private svgBBox: number[]
 
     constructor(private gpsBBox: number[]) {
-        this.kmBBox = this.bBoxGpsToKm(this.gpsBBox);
+        if (null == gpsBBox) {
+            throw new Error('The gpsBBox argument should not be null.');
+        }
+        if (gpsBBox.length != 4) {
+            throw new Error('The gpsBBox argument should contain 4 elements.');
+        }
 
-        const xScale = 170 / (this.kmBBox[2] - this.kmBBox[0]);
-        const yScale = 170 / (this.kmBBox[3] - this.kmBBox[1]);
+        const kmBBox = this.bBoxGpsToKm(this.gpsBBox);
+
+        const xScale = 170 / (kmBBox[2] - kmBBox[0]);
+        const yScale = 170 / (kmBBox[3] - kmBBox[1]);
         this.scale = Math.min(xScale, yScale);
 
-        this.xDif = (this.kmBBox[0] - this.kmBBox[2]) * (this.scale / 2) - this.kmBBox[0] * this.scale;
-        this.yDif = (this.kmBBox[1] - this.kmBBox[3]) * (this.scale / 2) - this.kmBBox[1] * this.scale;
+        this.xDif = (kmBBox[0] - kmBBox[2]) * (this.scale / 2) - kmBBox[0] * this.scale;
+        this.yDif = (kmBBox[1] - kmBBox[3]) * (this.scale / 2) - kmBBox[1] * this.scale;
     }
 
     public gpsToKm(lon: number, lat: number): number[] {
@@ -75,6 +83,14 @@ export class GPSConverter {
         result.push(loc2[0]);
         result.push(loc2[1]);
         return result;
+    }
+
+    public locGpsToSvg(loc: GPSLocation): SvgLocation {
+        return this.locKmToSvg(this.locGpsToKm(loc));
+    }
+
+    public bBoxGpsToSvg(bbox: number[]): number[] {
+        return this.bBoxKmToSvg(this.bBoxGpsToKm(bbox));
     }
 
     public relKmToSvg(km: number): number {

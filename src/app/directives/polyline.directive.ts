@@ -1,11 +1,12 @@
 import { Directive, ElementRef, Input, AfterViewInit } from '@angular/core';
 import { last } from 'rxjs/operators';
+import { SvgLocation } from '../services/anwb.model';
 
 @Directive({
     selector: '[appPolyline]'
 })
 export class PolylineDirective implements AfterViewInit {
-    @Input('appPolyline') coordinates: number[];
+    @Input('appPolyline') coordinates: SvgLocation[];
     @Input('first') first: number;
     @Input('last') last: number;
 
@@ -30,7 +31,7 @@ export class PolylineDirective implements AfterViewInit {
         if (this.first < this.last) {
             let points: string = '';
             for (let i: number = this.first ; i <= this.last; i++) {
-                points += `${this.coordinates[i][0]},${this.coordinates[i][1]} `;
+                points += `${this.coordinates[i].x},${this.coordinates[i].y} `;
             }
             this.el.nativeElement.setAttribute('points', points);
         }

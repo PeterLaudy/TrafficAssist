@@ -14,4 +14,10 @@ export class TalkToMeBaby {
         const speak = new SpeechSynthesisUtterance(text);
         this.synth.speak(speak);
     }
+
+    cancel() {
+        if (this.synth.speaking) {
+            this.synth.cancel();
+        }
+    }
 }

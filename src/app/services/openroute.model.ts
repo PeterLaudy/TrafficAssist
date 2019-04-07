@@ -1,3 +1,6 @@
+import { GPSConverter } from '../classes/gps-converter';
+import { KmLocation, SvgLocation } from './anwb.model';
+
 export class Step {
     distance: number;
     duration: number;
@@ -30,6 +33,16 @@ export class Geometry {
     type: string;
 }
 
+export class KmGeometry {
+    coordinates: KmLocation[];
+    type: string;
+}
+
+export class SvgGeometry {
+    coordinates: SvgLocation[];
+    type: string;
+}
+
 export class Feature {
     bbox: number[];
     type: string;
@@ -37,8 +50,8 @@ export class Feature {
     geometry: Geometry;
     kmBBox?: number[];
     svgBBox?: number[];
-    kmGeometry?: Geometry;
-    svgGeometry?: Geometry;
+    kmGeometry?: KmGeometry;
+    svgGeometry?: SvgGeometry;
 }
 
 export class Query {
@@ -60,11 +73,12 @@ export class Metadata {
     engine: Engine;
 }
 
-export class OpenRouteObject {
+export class OpenRouteModel {
     type: string;
     features: Feature[];
     bbox: number[];
     metadata: Metadata;
+    converter?: GPSConverter;
     kmBBox?: number[];
     svgBBox?: number[];
 }

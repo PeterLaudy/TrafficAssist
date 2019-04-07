@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { AnwbObject } from './anwb.model';
 import { tap, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { GPSConverter } from '../gps-converter';
+import { GPSConverter } from '../classes/gps-converter';
 
 @Injectable()
 

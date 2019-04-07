@@ -6,9 +6,10 @@ export interface Osm3s {
 export interface Element {
     type: string;
     id: any;
-    lat: number;
-    lon: number;
-    tags: any;
+    nodes?: number[];
+    lat?: number;
+    lon?: number;
+    tags?: any;
     kmX?: number;
     kmY?: number;
     svgX?: number;

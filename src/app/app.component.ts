@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Nominatum } from './services/nominatum.model';
 import { NominatumService } from './services/nominatum.service';
 import { OpenrouteService } from './services/openroute.service';
-import { OpenRouteObject, Feature } from './services/openroute.model';
+import { OpenRouteModel, Feature } from './services/openroute.model';
 import { AnwbService } from './services/anwb.service';
 import { AnwbObject, GPSLocation, TrafficJam } from './services/anwb.model';
 import { PolylineDirective } from './directives/polyline.directive';

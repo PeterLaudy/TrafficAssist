@@ -50,6 +50,28 @@ svg {
     background-color: burlywood;
 }
 
+svg.details {
+    background-color: transparent;
+}
+
+polyline.detail {
+    stroke: green;
+    stroke-width: 0.05px;
+    opacity: 0.25;
+}
+
+polyline.route-detail {
+    stroke: blue;
+    stroke-width: 0.05px;
+    opacity: 0.5;
+}
+
+circle.route-detail {
+    fill: yellow;
+    animation: none;
+    opacity: 0.75;
+}
+
 @keyframes fade-in {
     0% { opacity: 0; }
     100% { opacity: 1; }

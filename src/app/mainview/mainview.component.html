@@ -56,6 +56,16 @@
         </g>
     </g>
 </svg>
+<svg class="details" *ngIf="detailsVisible" preserveAspectRatio="xMidYMid meet"
+     [attr.viewBox]="detailsViewbox" width="100%" height="100%">
+    <g transform="scale(1,-1)">
+        <g *ngFor="let road of routeDetailsRoads">
+            <polyline class="detail" [appPolyline]="road" />
+        </g>
+        <polyline class="route-detail" [appPolyline]="routeDetailsRoute" />
+        <circle class="route-detail" [attr.cx]="myLocation.svgLoc.x"  [attr.cy]="myLocation.svgLoc.y" r="0.06"/>
+    </g>
+</svg>
 <div class="icons">
     <a [routerLink]="['/home', from, to]">
         <img id="home" src="assets/home.png">
