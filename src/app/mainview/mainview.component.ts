@@ -256,7 +256,12 @@ export class MainviewComponent implements OnInit {
         if (null != this.myLocationTimer) {
             this.myLocationTimer.unsubscribe();
         }
-        this.myLocationTimer = timer(1000, 5000).subscribe(response => {
+        this.myLocationTimer = timer(1000, 500).subscribe(response => {
+            var options = {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            };
             navigator.geolocation.getCurrentPosition(position => {
                 if (this.currentLocation === -1) {
                     const loc = new GPSLocation();
@@ -265,7 +270,8 @@ export class MainviewComponent implements OnInit {
                     this.myLocation = new AccurateLocation(this.route.converter, loc, position.coords.accuracy);
                     this.updateDetailedLocation();
                 }
-            });
+            }, error => { 
+            }, options);
         });
     }
 
