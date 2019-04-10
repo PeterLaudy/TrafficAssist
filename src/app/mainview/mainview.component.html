@@ -66,15 +66,25 @@
         <circle class="route-detail" [attr.cx]="myLocation.svgLoc.x"  [attr.cy]="myLocation.svgLoc.y" r="0.06"/>
     </g>
 </svg>
-<div class="icons">
+<svg *ngIf="(distance > 25) && (distance < 500)" class="distance" viewBox="0 0 100 100">
+    <text x="50" y="85" text-anchor="middle">{{distance}}</text>
+</svg>
+<div class="top-left-icons">
     <a [routerLink]="['/home', from, to]">
-        <img id="home" src="assets/home.png">
+        <img id="home" src="assets/home.svg">
     </a>
     <a [routerLink]="['/main', to, from]">
-        <img id="reverse" src="assets/reverse.png">
+        <img id="reverse" src="assets/reverse.svg">
     </a>
+    <br/>
+    <img src="assets/full-screen.svg" (click)="fullScreen.toggleFullscreen();">
+    <img id="demo" src="assets/demo.svg" (click)="startDemo();">
 </div>
-<div class="icons">
-    <img src="assets/full-screen.png" (click)="fullScreen.toggleFullscreen();">
-    <img id="demo" src="assets/demo.png" (click)="startDemo();">
+<div class="top-right-icons">
+    <img *ngIf="locationError" src="assets/gps-error.svg">
+</div>
+<div class="bottom-left-icons">
+    <a href="https://github.com/PeterLaudy/TrafficAssist" target="blank">
+        <img src="assets/github.svg">
+    </a>
 </div>

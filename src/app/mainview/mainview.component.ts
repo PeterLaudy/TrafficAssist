@@ -30,6 +30,7 @@ export class MainviewComponent implements OnInit {
     fromLoc: Nominatum;
     toLoc: Nominatum;
     route: OpenRouteModel;
+    nextStep: number = 0;
     anwbInfo: AnwbObject;
     anwbTimer: Subscription;
     bbox: string;
@@ -41,14 +42,18 @@ export class MainviewComponent implements OnInit {
     maxLon: number;
     maxLat: number;
     cities: Element[];
-    myLocation: AccurateLocation;
     myLocationTimer: Subscription;
+    myLocation: AccurateLocation;
+    distance: number = 0;
+    locationError: boolean = false;
     currentLocation: number = -1;
     detailsVisible: boolean = false;
     detailsViewbox: string;
     routeDetailsRoads: SvgLocation[][];
     routeDetailsRoute: SvgLocation[];
     spokenText: string = '';
+    foundNextStep: boolean = false;
+    nextInstruction: string;
     
     /**
      * Create the view
@@ -264,13 +269,16 @@ export class MainviewComponent implements OnInit {
             };
             navigator.geolocation.getCurrentPosition(position => {
                 if (this.currentLocation === -1) {
+                    this.locationError = false;
                     const loc = new GPSLocation();
                     loc.lon = position.coords.longitude;
                     loc.lat = position.coords.latitude;
                     this.myLocation = new AccurateLocation(this.route.converter, loc, position.coords.accuracy);
                     this.updateDetailedLocation();
+                    this.checkForDirections();
                 }
-            }, error => { 
+            }, error => {
+                this.locationError = true;
             }, options);
         });
     }
@@ -281,20 +289,46 @@ export class MainviewComponent implements OnInit {
      *       This is fine in demo-mode, but does not work during real driving.
      */
     checkForDirections() {
-        this.route.features[0].properties.segments.forEach(segment => {
-            segment.steps.forEach(step => {
-                const index = Math.max(0, step.way_points[0] - 10);
-                const x = this.route.features[0].geometry.coordinates[index][0];
-                const y = this.route.features[0].geometry.coordinates[index][1];
-                if ((x == this.myLocation.loc.lon) && (y == this.myLocation.loc.lat)) {
-                    if (this.spokenText != step.instruction) {
-                        this.spokenText = step.instruction;
-                        this.speak.sayIt(step.instruction);
-                    }
-                    return;
+        const coordinate = this.route.features[0].geometry.coordinates[this.nextStep];
+        const loc = new GPSLocation();
+        loc.lon = coordinate[0];
+        loc.lat = coordinate[1];
+        let kmLoc = this.route.converter.locGpsToKm(loc);
+        kmLoc.x -= this.myLocation.kmLoc.x;
+        kmLoc.y -= this.myLocation.kmLoc.y;
+        const prevDistance = this.distance;
+        this.distance = Math.round(Math.sqrt(kmLoc.x * kmLoc.x + kmLoc.y * kmLoc.y) * 1000);
+        console.log(prevDistance - this.distance);
+        if (this.distance < 300) {
+            if (this.nextInstruction) {
+                console.log(this.nextInstruction);
+                this.speak.sayIt(this.nextInstruction);
+                this.nextInstruction = null;
+            }
+            if (this.distance < 100) {
+                this.foundNextStep = true;
+            }
+            if ((this.distance > 200) || (this.distance < 25)) {
+                if (this.foundNextStep) {
+                    this.foundNextStep = false;
+                    let getNext = false;
+                    this.route.features[0].properties.segments.forEach(segment => {
+                        segment.steps.forEach(step => {
+                            if (step.way_points[0] == this.nextStep) {
+                                getNext = true;
+                            } else {
+                                if (getNext && step.instruction) {
+                                    this.nextInstruction = step.instruction;
+                                    this.nextStep = step.way_points[0];
+                                    getNext = false;
+                                }
+                            }
+                        });
+                    });
                 }
-            });
-        });
+            }
+        }
+        return;
     }
 
     /**

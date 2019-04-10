@@ -1,14 +1,33 @@
-div.icons {
+div.top-left-icons {
     margin: 0px;
     padding: 0px;
-    position: relative;
-    height: 48px;
+    top: 0;
+    left: 0;
+    width: 80 px;
+    position: absolute;
 }
 
-div.bottomicons {
-    margin: 0px;
-    padding: 0px;
-    top: calc(100% - 32px);
+div.top-right-icons {
+    margin: 0;
+    padding: 0;
+    top: 0;
+    right: 0;
+    position: absolute;
+}
+
+div.bottom-left-icons {
+    margin: 0;
+    padding: 0;
+    bottom: 0;
+    left: 0;
+    position: absolute;
+}
+
+div.bottom-right-icons {
+    margin: 0;
+    padding: 0;
+    bottom: 0;
+    right: 0;
     position: absolute;
 }
 
@@ -52,6 +71,20 @@ svg {
 
 svg.details {
     background-color: transparent;
+}
+
+svg.distance {
+    top: 0px;
+    left: calc(50% - 32px);
+    width: 64px;
+    height: 48px;
+    position: absolute;
+}
+
+svg.distance text {
+    font-size: 80px;
+    fill: black;
+    animation: none;
 }
 
 polyline.detail {
@@ -139,8 +172,26 @@ text {
     animation: fade-in 1s ease-in;
 }
 
-img {
+div.top-left-icons img {
     width: 32px;
     height: 32px;
-    margin-right: 16px;
+    margin: 0 16px 16px 0;
+}
+
+div.top-right-icons img {
+    width: 48px;
+    height: 48px;
+    margin: 0 0 16px 16px;
+}
+
+div.bottom-left-icons img {
+    width: 48px;
+    height: 48px;
+    margin: 16px 16px 0 0;
+}
+
+div.bottom-right-icons img {
+    width: 32px;
+    height: 32px;
+    margin: 16px 0 0 16px;
 }
