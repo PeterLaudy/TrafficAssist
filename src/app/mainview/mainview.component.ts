@@ -12,6 +12,7 @@ import { timer, Subscription } from 'rxjs';
 import { FullScreen } from '../services/full-screen.service';
 import { GPSConverter } from '../classes/gps-converter';
 import { TalkToMeBaby } from '../services/talktomebaby.service';
+import { RouteAndTrafficCombination } from '../classes/routeandtrafficcombo';
 
 @Component({
     selector: 'app-mainview',
@@ -33,14 +34,6 @@ export class MainviewComponent implements OnInit {
     nextStep: number = 0;
     anwbInfo: AnwbObject;
     anwbTimer: Subscription;
-    bbox: string;
-    transform: string;
-    trafficInfos: TrafficInfo[];
-    radarInfos: Radar[];
-    minLon: number;
-    minLat: number;
-    maxLon: number;
-    maxLat: number;
     cities: Element[];
     myLocationTimer: Subscription;
     myLocation: AccurateLocation;
@@ -51,9 +44,9 @@ export class MainviewComponent implements OnInit {
     detailsViewbox: string;
     routeDetailsRoads: SvgLocation[][];
     routeDetailsRoute: SvgLocation[];
-    spokenText: string = '';
     foundNextStep: boolean = false;
     nextInstruction: string;
+    routeAndTrafficCombo: RouteAndTrafficCombination;
     
     /**
      * Create the view
@@ -85,9 +78,7 @@ export class MainviewComponent implements OnInit {
             this.activatedRout.paramMap.subscribe(route => {
                 // Clean any existing data to clear the page.
                 this.route = null;
-                this.trafficInfos = null;
                 this.cities = null;
-                this.radarInfos = null;
                 this.routeDetailsRoads = null;
                 this.routeDetailsRoute = null;
                 // From the URL parameters, we get the from and to addresses.
@@ -124,10 +115,9 @@ export class MainviewComponent implements OnInit {
             .subscribe(result => {
                 // Store the route.
                 this.route = result;
+                this.routeAndTrafficCombo = new RouteAndTrafficCombination(this.route);
                 // Get the traffic information.
                 this.startGettingANWBInfo();
-                // Calculate the bounding box around the route.
-                this.getMapSize();
                 // Get the cities in that bounding box
                 this.getCitiesAndRouteDetails();
                 // Get the location of the device.
@@ -149,26 +139,9 @@ export class MainviewComponent implements OnInit {
                 // Combine the result with the route information.
                 // The GPS coordinates of the traffic information do not
                 // fully correspond to the ones of the calculated route.
-                this.combineRouteAndTraffic();
-                this.combineRouteAndRadar();
+                this.routeAndTrafficCombo.combineWithTrafficInfo(this.anwbInfo);
             });
         });
-    }
-
-    /**
-     * Get the bounding box of the area covering the calculated route.
-     * This information is used in the SVG object on the page.
-     */
-    getMapSize() {
-        if ((this.anwbInfo != null) && (this.route != null)) {
-            this.minLon = this.route.svgBBox[0];
-            this.minLat = this.route.svgBBox[1];
-            this.maxLon = this.route.svgBBox[2];
-            this.maxLat = this.route.svgBBox[3];
-            this.bbox = `${this.route.bbox[0]} ${this.route.bbox[1]} ` +
-                        `${this.route.bbox[2] - this.route.bbox[0]} ${this.route.bbox[3] - this.route.bbox[1]}`;
-            this.transform = `scale(1,-1)`;
-        }
     }
 
     /**
@@ -268,7 +241,7 @@ export class MainviewComponent implements OnInit {
                 maximumAge: 0
             };
             navigator.geolocation.getCurrentPosition(position => {
-                if (this.currentLocation === -1) {
+                if ((this.currentLocation === -1) && (null != this.route)) {
                     this.locationError = false;
                     const loc = new GPSLocation();
                     loc.lon = position.coords.longitude;
@@ -298,34 +271,11 @@ export class MainviewComponent implements OnInit {
         kmLoc.y -= this.myLocation.kmLoc.y;
         const prevDistance = this.distance;
         this.distance = Math.round(Math.sqrt(kmLoc.x * kmLoc.x + kmLoc.y * kmLoc.y) * 1000);
-        console.log(prevDistance - this.distance);
         if (this.distance < 300) {
             if (this.nextInstruction) {
                 console.log(this.nextInstruction);
                 this.speak.sayIt(this.nextInstruction);
                 this.nextInstruction = null;
-            }
-            if (this.distance < 100) {
-                this.foundNextStep = true;
-            }
-            if ((this.distance > 200) || (this.distance < 25)) {
-                if (this.foundNextStep) {
-                    this.foundNextStep = false;
-                    let getNext = false;
-                    this.route.features[0].properties.segments.forEach(segment => {
-                        segment.steps.forEach(step => {
-                            if (step.way_points[0] == this.nextStep) {
-                                getNext = true;
-                            } else {
-                                if (getNext && step.instruction) {
-                                    this.nextInstruction = step.instruction;
-                                    this.nextStep = step.way_points[0];
-                                    getNext = false;
-                                }
-                            }
-                        });
-                    });
-                }
             }
         }
         return;
@@ -342,110 +292,6 @@ export class MainviewComponent implements OnInit {
         bbox = this.route.converter.bBoxGpsToSvg(bbox);
         this.detailsViewbox = `${bbox[0]} ${-bbox[3]} ${bbox[2] - bbox[0]} ${bbox[3] - bbox[1]}`;
     }
-
-    /**
-     * Get the segments of the calculated route where there is a traffic jam.
-     */
-    combineRouteAndTraffic() {
-        this.trafficInfos = [];
-        let trafficInfo: TrafficInfo;
-        for (const road of this.anwbInfo.roadEntries) {
-            for (const jam of road.events.trafficJams) {
-                for (const feature of this.route.features) {
-                    const first = this.getNearestSegment(jam.kmFromLoc, feature.kmGeometry.coordinates);
-                    const last = this.getNearestSegment(jam.kmToLoc, feature.kmGeometry.coordinates);
-                    const isOnRoute = this.isOnSegment(jam.kmFromLoc, feature.kmGeometry.coordinates, first) &&
-                                      this.isOnSegment(jam.kmToLoc, feature.kmGeometry.coordinates, last);
-                    if (first < last) {
-                        if (isOnRoute) {
-                            trafficInfo = new TrafficInfo(jam, feature, first, last);
-                            this.trafficInfos.push(trafficInfo);
-                        }
-                    } else {
-                        if (isOnRoute) {
-                            console.log(`Wrong direction! ${jam.description}`);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Get the segments of the calculated route where there is a speed camera is set up.
-     */
-    combineRouteAndRadar() {
-        this.radarInfos = [];
-        for (const road of this.anwbInfo.roadEntries) {
-            for (const radar of road.events.radars) {
-                for (const feature of this.route.features) {
-                    const index: number = this.getNearestSegment(radar.kmLoc, feature.kmGeometry.coordinates);
-                    if (this.isOnSegment(radar.kmFromLoc, feature.kmGeometry.coordinates, index)) {
-                        const first = this.getNearestSegment(radar.kmFromLoc, feature.kmGeometry.coordinates);
-                        const last = this.getNearestSegment(radar.kmToLoc, feature.kmGeometry.coordinates)
-                        if (first < last) {
-                            radar.svgFromLoc.x = feature.svgGeometry.coordinates[index][0];
-                            radar.svgFromLoc.y = feature.svgGeometry.coordinates[index][1];
-                            radar.svgToLoc.x = feature.svgGeometry.coordinates[index + 1][0];
-                            radar.svgToLoc.y = feature.svgGeometry.coordinates[index + 1][1];
-                            radar.svgPosition = `translate(${radar.svgLoc.x},${radar.svgLoc.y}) scale(0.25,-0.25)`;
-                            this.radarInfos.push(radar);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Check if the given location is at the given segment of the calculated route.
-     * @param location The location to check
-     * @param start The minimum longtitude and latitude coordinates of the segment
-     * @param stop The maximum longtitude and latitude coordinates of the segment
-     */
-    isOnSegment(location: KmLocation, coordinates: KmLocation[], index: number): boolean {
-        const minX = Math.min(coordinates[index].x, coordinates[index + 1].x) - 1;
-        const maxX = Math.max(coordinates[index].x, coordinates[index + 1].x) + 1;
-        const minY = Math.min(coordinates[index].y, coordinates[index + 1].y) - 1;
-        const maxY = Math.max(coordinates[index].y, coordinates[index + 1].y) + 1;
-        return ((location.x >= minX) && (location.x <= maxX) && (location.y >= minY) && (location.y <= maxY));
-    }
-
-    /**
-     * Find the index of the coordinate in the given list closest to the given location.
-     * @param location The location for which to find the closest coordinate in the list.
-     * @param coordinates The list to search
-     */
-    getNearestSegment(location: KmLocation, coordinates: KmLocation[]): number {
-        let minDist = 1000;
-        let result = 0;
-        for (let i = 0; i < coordinates.length; i++) {
-            const xDif = location.x - coordinates[i].x;
-            const yDif = location.y - coordinates[i].y;
-            const dist = Math.sqrt(xDif * xDif + yDif * yDif);
-            if (dist < minDist) {
-                minDist = dist;
-                result = i;
-            }
-        }
-        if (coordinates.length - 1 == result) {
-            result--;
-        }
-        return result;
-    }
-}
-
-/**
- * A class containing the processed information about a traffic jam.
- */
-export class TrafficInfo {
-    /**
-     * @param trafficjam The traffic jam information as returned from the traffic information service
-     * @param feature The GPS information of the calculated route
-     * @param first The first coordinate of the traffic jam
-     * @param last The last coordinate of the traffic jam
-     */
-    constructor(public trafficjam: TrafficJam, public feature: Feature, public first: number, public last: number) { }
 }
 
 /**
