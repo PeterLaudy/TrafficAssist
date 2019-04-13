@@ -1,3 +1,5 @@
+import { GpsLocation, KmLocation, SvgLocation } from '../classes/location.model';
+
 export interface Osm3s {
     timestamp_osm_base: Date;
     copyright: string;
@@ -7,13 +9,9 @@ export interface Element {
     type: string;
     id: any;
     nodes?: number[];
-    lat?: number;
-    lon?: number;
+    lon? : number;
+    lat? : number;
     tags?: any;
-    kmX?: number;
-    kmY?: number;
-    svgX?: number;
-    svgY?: number;
 }
 
 export interface OverpassModel {

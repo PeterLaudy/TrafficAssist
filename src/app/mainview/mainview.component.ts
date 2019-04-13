@@ -1,18 +1,19 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Nominatum } from '../services/nominatum.model';
 import { NominatumService } from '../services/nominatum.service';
 import { OpenrouteService } from '../services/openroute.service';
-import { OpenRouteModel, Feature } from '../services/openroute.model';
+import { RouteModel } from '../classes/route.model';
 import { AnwbService } from '../services/anwb.service';
-import { AnwbObject, GPSLocation, TrafficJam, Radar, KmLocation, SvgLocation } from '../services/anwb.model';
+import { TrafficModel, TrafficJam, Radar } from '../classes/traffic.model';
+import { GpsLocation, KmLocation, SvgLocation, AccurateLocation } from '../classes/location.model';
 import { OverpassService } from '../services/overpass.service';
-import { Element } from '../services/overpass.model';
 import { ActivatedRoute } from '@angular/router';
 import { timer, Subscription } from 'rxjs';
 import { FullScreen } from '../services/full-screen.service';
-import { GPSConverter } from '../classes/gps-converter';
 import { TalkToMeBaby } from '../services/talktomebaby.service';
 import { RouteAndTrafficCombination } from '../classes/routeandtrafficcombo';
+import { RouteDetails } from '../classes/routedetails';
+import { City } from '../classes/city';
+import { NextStep } from '../classes/nextstep';
 
 @Component({
     selector: 'app-mainview',
@@ -28,24 +29,25 @@ export class MainviewComponent implements OnInit {
 
     from: string;
     to: string;
-    fromLoc: Nominatum;
-    toLoc: Nominatum;
-    route: OpenRouteModel;
-    nextStep: number = 0;
-    anwbInfo: AnwbObject;
+    fromLoc: GpsLocation;
+    toLoc: GpsLocation;
+    routeInfo: RouteModel;
+    trafficInfo: TrafficModel;
+    cities: City[] = [];
+
     anwbTimer: Subscription;
-    cities: Element[];
     myLocationTimer: Subscription;
     myLocation: AccurateLocation;
+
+    stepIndex: number = 0;
+    nextStep: NextStep;
+    nextInstructionToSpeak: string = null;
     distance: number = 0;
+    angle: number = 0;
     locationError: boolean = false;
     currentLocation: number = -1;
-    detailsVisible: boolean = false;
-    detailsViewbox: string;
-    routeDetailsRoads: SvgLocation[][];
-    routeDetailsRoute: SvgLocation[];
-    foundNextStep: boolean = false;
-    nextInstruction: string;
+
+    routeDetails: RouteDetails
     routeAndTrafficCombo: RouteAndTrafficCombination;
     
     /**
@@ -72,23 +74,27 @@ export class MainviewComponent implements OnInit {
      */
     ngOnInit() {
         // First we get the API key for the navigation routing service.
-        // By putting it in aa seperate file, we prevent it from being
+        // By putting it in a seperate file, we can prevent it from being
         // stored in the GitHub repository.
         this.openRoute.getAPIKey().subscribe(key =>
-            this.activatedRout.paramMap.subscribe(route => {
+            this.activatedRout.paramMap.subscribe(url => {
                 // Clean any existing data to clear the page.
-                this.route = null;
-                this.cities = null;
-                this.routeDetailsRoads = null;
-                this.routeDetailsRoute = null;
+                this.routeInfo = null;
+                this.cities = [];
+                this.routeDetails = null;
+                this.fromLoc = null;
+                this.toLoc = null;
+                this.nextStep = null;
+                this.nextInstructionToSpeak = null;
+                this.routeAndTrafficCombo = null;
                 // From the URL parameters, we get the from and to addresses.
-                this.from = route.get('from');
-                this.to = route.get('to');
+                this.from = url.get('from');
+                this.to = url.get('to');
                 // We get the GPS coordinate for the from address.
                 this.nominatum.getLocation(this.from)
                     .subscribe(result => {
                         // Get the result and start getting the route if the to location is known.
-                        this.fromLoc = result[0];
+                        this.fromLoc = result;
                         if (null != this.toLoc) {
                             this.getRoute();
                         }
@@ -97,7 +103,7 @@ export class MainviewComponent implements OnInit {
                 this.nominatum.getLocation(this.to)
                     .subscribe(result => {
                         // Get the result and start getting the route if the from location is known.
-                        this.toLoc = result[0];
+                        this.toLoc = result;
                         if (null != this.fromLoc) {
                             this.getRoute();
                         }
@@ -110,18 +116,21 @@ export class MainviewComponent implements OnInit {
      * Call the service to caclulate the route between the two given addresses.
      */
     getRoute() {
-        this.openRoute.getRoute(
-            [this.fromLoc.lon, this.fromLoc.lat], [this.toLoc.lon, this.toLoc.lat])
+        this.openRoute.getRoute(this.fromLoc, this.toLoc)
             .subscribe(result => {
                 // Store the route.
-                this.route = result;
-                this.routeAndTrafficCombo = new RouteAndTrafficCombination(this.route);
+                this.routeInfo = result;
+                this.routeAndTrafficCombo = new RouteAndTrafficCombination(this.routeInfo);
                 // Get the traffic information.
                 this.startGettingANWBInfo();
                 // Get the cities in that bounding box
                 this.getCitiesAndRouteDetails();
                 // Get the location of the device.
                 this.startGettingMyLocation();
+                // Inialize the first instruction.
+                this.stepIndex = 0;
+                this.nextStep = new NextStep(this.routeInfo, 0);
+                this.nextInstructionToSpeak = this.routeInfo.directions[0].instruction;
             });
     }
 
@@ -133,13 +142,13 @@ export class MainviewComponent implements OnInit {
             this.anwbTimer.unsubscribe();
         }
         this.anwbTimer = timer(1000, 30000).subscribe(response => {
-            this.anwb.getTraficInfo(this.route.converter).subscribe(trafic => {
+            this.anwb.getTraficInfo(this.routeInfo.converter).subscribe(traffic => {
                 // Store the result.
-                this.anwbInfo = trafic;
+                this.trafficInfo = traffic;
                 // Combine the result with the route information.
                 // The GPS coordinates of the traffic information do not
                 // fully correspond to the ones of the calculated route.
-                this.routeAndTrafficCombo.combineWithTrafficInfo(this.anwbInfo);
+                this.routeAndTrafficCombo.combineWithTrafficInfo(this.trafficInfo);
             });
         });
     }
@@ -155,49 +164,34 @@ export class MainviewComponent implements OnInit {
      *         around each of them them.
      */
     getCitiesAndRouteDetails() {
-        const detailLocations: GPSLocation[] = [];
+        const detailLocations: GpsLocation[] = [];
         //*
-        this.route.features[0].properties.segments.forEach(segment => {
-            segment.steps.forEach(step => {
-                if (step.instruction) {
-                    const c = this.route.features[0].geometry.coordinates[step.way_points[0]];
-                    const gps = new GPSLocation();
-                    gps.lon = c[0];
-                    gps.lat = c[1];
-                    detailLocations.push(gps);
-                }
-            });
+        this.routeInfo.directions.forEach(direction => {
+            if (direction.instruction) {
+                detailLocations.push(this.routeInfo.gpsCoordinates[direction.coordinateIndex]);
+            }
         });
         /*/
-        this.route.features[0].geometry.coordinates.forEach(coordinate => {
-            const gps = new GPSLocation();
-            gps.lon = coordinate[0];
-            gps.lat = coordinate[1];
+        this.routeInfo.gpsCoordinates.forEach(gps => {
             detailLocations.push(gps);
         });
         //*/
-        this.overpass.getCitiesAndRouteDetails(detailLocations, this.route.bbox)
+        this.overpass.getCitiesAndRouteDetails(detailLocations, this.routeInfo.gpsBBox)
             .subscribe(result => {
                 this.cities = result.cities;
 
-                this.routeDetailsRoads = [];
+                let details = new RouteDetails();
                 result.roads.forEach(road => {
-                    const svgRoad: SvgLocation[] = [];
+                    const svgRoad: KmLocation[] = [];
                     road.forEach(loc => {
-                        svgRoad.push(this.route.converter.locGpsToSvg(loc));
+                        svgRoad.push(this.routeInfo.converter.gpsToKm(loc));
                     });
-                    this.routeDetailsRoads.push(svgRoad);
+                    details.roads.push(svgRoad);
                 });
 
-                this.routeDetailsRoute = [];
-                this.route.features[0].geometry.coordinates.forEach(coordinate => {
-                    const gps = new GPSLocation();
-                    gps.lon = coordinate[0];
-                    gps.lat = coordinate[1];
-                    this.routeDetailsRoute.push(this.route.converter.locGpsToSvg(gps));
-                });
+                details.route = this.routeInfo.kmCoordinates;
 
-                this.detailsVisible = true;
+                this.routeDetails = details;
             });
     }
 
@@ -209,20 +203,20 @@ export class MainviewComponent implements OnInit {
         document.getElementById("reverse").hidden = true;
         document.getElementById("demo").hidden = true;
         this.currentLocation = 0;
+        this.stepIndex = 0;
+        this.nextStep = new NextStep(this.routeInfo, 0);
+        this.nextInstructionToSpeak = this.routeInfo.directions[0].instruction;
         const locEvent = timer(100, 250).subscribe(response => {
-            const loc = new GPSLocation();
-            loc.lon = this.route.features[0].geometry.coordinates[this.currentLocation][0];
-            loc.lat = this.route.features[0].geometry.coordinates[this.currentLocation][1];
-            this.myLocation = new AccurateLocation(this.route.converter, loc, 25);
-            this.updateDetailedLocation();
+            let loc = this.routeInfo.gpsCoordinates[this.currentLocation];
+            this.myLocation = new AccurateLocation(this.routeInfo.converter, loc, 25);
             this.checkForDirections();
-            if (++this.currentLocation == this.route.features[0].geometry.coordinates.length) {
+            this.updateDetailedLocation();
+            if (++this.currentLocation == this.routeInfo.gpsCoordinates.length) {
                 this.currentLocation = -1;
                 document.getElementById("home").hidden = false;
                 document.getElementById("reverse").hidden = false;
                 document.getElementById("demo").hidden = false;
                 locEvent.unsubscribe();
-                this.detailsVisible = false;
             }
         });
     }
@@ -241,14 +235,14 @@ export class MainviewComponent implements OnInit {
                 maximumAge: 0
             };
             navigator.geolocation.getCurrentPosition(position => {
-                if ((this.currentLocation === -1) && (null != this.route)) {
+                if ((this.currentLocation === -1) && (null != this.routeInfo)) {
                     this.locationError = false;
-                    const loc = new GPSLocation();
+                    const loc = new GpsLocation();
                     loc.lon = position.coords.longitude;
                     loc.lat = position.coords.latitude;
-                    this.myLocation = new AccurateLocation(this.route.converter, loc, position.coords.accuracy);
-                    this.updateDetailedLocation();
+                    this.myLocation = new AccurateLocation(this.routeInfo.converter, loc, position.coords.accuracy);
                     this.checkForDirections();
+                    this.updateDetailedLocation();
                 }
             }, error => {
                 this.locationError = true;
@@ -258,57 +252,53 @@ export class MainviewComponent implements OnInit {
 
     /**
      * Check if spoken directions are at order.
-     * @todo For now it just checks against the exact GPS coordinates of the route.
-     *       This is fine in demo-mode, but does not work during real driving.
      */
     checkForDirections() {
-        const coordinate = this.route.features[0].geometry.coordinates[this.nextStep];
-        const loc = new GPSLocation();
-        loc.lon = coordinate[0];
-        loc.lat = coordinate[1];
-        let kmLoc = this.route.converter.locGpsToKm(loc);
-        kmLoc.x -= this.myLocation.kmLoc.x;
-        kmLoc.y -= this.myLocation.kmLoc.y;
+        let kmLoc = new KmLocation();
+        const coordinateIndex = this.routeInfo.directions[this.stepIndex].coordinateIndex;
+        kmLoc.x = this.routeInfo.kmCoordinates[coordinateIndex].x - this.myLocation.kmLoc.x;
+        kmLoc.y = this.routeInfo.kmCoordinates[coordinateIndex].y - this.myLocation.kmLoc.y;
         const prevDistance = this.distance;
         this.distance = Math.round(Math.sqrt(kmLoc.x * kmLoc.x + kmLoc.y * kmLoc.y) * 1000);
-        if (this.distance < 300) {
-            if (this.nextInstruction) {
-                console.log(this.nextInstruction);
-                this.speak.sayIt(this.nextInstruction);
-                this.nextInstruction = null;
+        if ((300 > this.distance) && (null != this.nextInstructionToSpeak)) {
+            console.log(this.nextInstructionToSpeak);
+            this.speak.sayIt(this.nextInstructionToSpeak);
+            this.nextInstructionToSpeak = null;
+        }
+        while ((null != this.nextStep) && this.nextStep.hasPassedNextStep(this.myLocation.kmLoc)) {
+            this.stepIndex++;
+            this.nextInstructionToSpeak = this.routeInfo.directions[this.stepIndex].instruction;
+            if (this.stepIndex < this.routeInfo.directions.length - 1) {
+                this.nextStep = new NextStep(this.routeInfo, this.stepIndex);
+            } else {
+                this.nextStep = null;
             }
         }
-        return;
     }
 
     /**
      * Update the overlay map.
-     * @@todo Take the heading into account, so we turn the map
-     *        into the driving direction.
      */
     private updateDetailedLocation() {
-        let bbox = [this.myLocation.loc.lon - 0.005, this.myLocation.loc.lat - 0.005,
-        this.myLocation.loc.lon + 0.005, this.myLocation.loc.lat + 0.005];
-        bbox = this.route.converter.bBoxGpsToSvg(bbox);
-        this.detailsViewbox = `${bbox[0]} ${-bbox[3]} ${bbox[2] - bbox[0]} ${bbox[3] - bbox[1]}`;
-    }
-}
-
-/**
- * A class containing the processed information about the current location of the device.
- */
-export class AccurateLocation {
-
-    public kmLoc: KmLocation;
-    public svgLoc: SvgLocation;
-
-    /**
-     * @param loc The location of the device
-     * @param accuracy The accuracy of the location in meters
-     */
-    constructor(converter: GPSConverter, public loc: GPSLocation, public accuracy: number) {
-        this.kmLoc = converter.locGpsToKm(this.loc);
-        this.svgLoc = converter.locKmToSvg(this.kmLoc);
-        this.accuracy = converter.relKmToSvg(this.accuracy / 1000);
+        if (this.routeDetails && (this.stepIndex < this.routeInfo.directions.length)) {
+            let bbox = [this.myLocation.kmLoc.x - 2, this.myLocation.kmLoc.y - 0.8,
+                        this.myLocation.kmLoc.x + 2, this.myLocation.kmLoc.y + 3.2];
+            this.routeDetails.viewbox = `${bbox[0]} ${-bbox[3]} ${bbox[2] - bbox[0]} ${bbox[3] - bbox[1]}`;
+            const index = Math.min(this.stepIndex + 1, this.routeInfo.directions.length - 1);
+            const relativeLoc = 
+                this.routeInfo.kmCoordinates[this.routeInfo.directions[index].coordinateIndex].translate(
+                    this.myLocation.kmLoc
+                );
+            let newAngle = Math.atan2(relativeLoc.x, relativeLoc.y) * 180 / Math.PI;
+            while (newAngle - this.angle > 180) {
+                newAngle -= 360;
+            }
+            while (newAngle - this.angle < -180) {
+                newAngle += 360;
+            }
+            this.angle = this.angle * 0.9 + newAngle * 0.1;
+            this.routeDetails.transform = 'scale(1 -1) ' +
+                                          `rotate(${this.angle} ${this.myLocation.kmLoc.x} ${this.myLocation.kmLoc.y})`;
+        }
     }
 }

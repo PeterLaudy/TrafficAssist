@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AnwbObject } from './anwb.model';
+import { AnwbModel } from './anwb.model';
+import { TrafficModel, RoadEntry, TrafficJam, RoadWork, Radar } from '../classes/traffic.model';
 import { tap, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { GPSConverter } from '../classes/gps-converter';
@@ -11,33 +12,80 @@ export class AnwbService {
 
     constructor(private http: HttpClient) { }
 
-    getTraficInfo(converter: GPSConverter): Observable<AnwbObject> {
+    getTraficInfo(converter: GPSConverter): Observable<TrafficModel> {
         console.log('Getting trafic information');
-        return this.http.get<AnwbObject>('https://www.anwb.nl/feeds/gethf')
+        return this.http.get<AnwbModel>('https://www.anwb.nl/feeds/gethf')
             .pipe(
-                map(result => {
-                    for (const road of result.roadEntries) {
-                        for (const jam of road.events.trafficJams) {
-                            jam.kmFromLoc = converter.locGpsToKm(jam.fromLoc);
-                            jam.kmToLoc = converter.locGpsToKm(jam.toLoc);
-                            jam.svgFromLoc = converter.locKmToSvg(jam.kmFromLoc);
-                            jam.svgToLoc = converter.locKmToSvg(jam.kmToLoc);
+                map(anwbInfo => {
+                    let result = new TrafficModel();
+                    for (const anwbRoad of anwbInfo.roadEntries) {
+                        let road = new RoadEntry();
+                        for (const anwbTrafficJam of anwbRoad.events.trafficJams) {
+                            let trafficJam = new TrafficJam();
+                            trafficJam.description = trafficJam.description;
+                            trafficJam.location = trafficJam.location;
+                            trafficJam.reason = trafficJam.reason;
+                            trafficJam.from = anwbTrafficJam.from;
+                            trafficJam.to = anwbTrafficJam.to;
+                            trafficJam.gpsFromLoc = anwbTrafficJam.fromLoc;
+                            trafficJam.gpsToLoc = anwbTrafficJam.toLoc;
+                            trafficJam.kmFromLoc = converter.gpsToKm(trafficJam.gpsFromLoc);
+                            trafficJam.kmToLoc = converter.gpsToKm(trafficJam.gpsToLoc);
+                            trafficJam.svgFromLoc = converter.kmToSvg(trafficJam.kmFromLoc);
+                            trafficJam.svgToLoc = converter.kmToSvg(trafficJam.kmToLoc);
+
+                            trafficJam.delay = trafficJam.delay;
+                            trafficJam.distance = trafficJam.distance;
+
+                            road.trafficJams.push(trafficJam);
                         }
-                        for (const work of road.events.roadWorks) {
-                            work.kmFromLoc = converter.locGpsToKm(work.fromLoc);
-                            work.kmToLoc = converter.locGpsToKm(work.toLoc);
-                            work.svgFromLoc = converter.locKmToSvg(work.kmFromLoc);
-                            work.svgToLoc = converter.locKmToSvg(work.kmToLoc);
+
+                        for (const anwbRoadWork of anwbRoad.events.roadWorks) {
+                            let roadWork = new RoadWork();
+                            roadWork.description = anwbRoadWork.description;
+                            roadWork.location = anwbRoadWork.location;
+                            roadWork.reason = anwbRoadWork.reason;
+                            roadWork.from = anwbRoadWork.from;
+                            roadWork.to = anwbRoadWork.to;
+                            roadWork.gpsFromLoc = anwbRoadWork.fromLoc;
+                            roadWork.gpsToLoc = anwbRoadWork.toLoc;
+                            roadWork.kmFromLoc = converter.gpsToKm(roadWork.gpsFromLoc);
+                            roadWork.kmToLoc = converter.gpsToKm(roadWork.gpsToLoc);
+                            roadWork.svgFromLoc = converter.kmToSvg(roadWork.kmFromLoc);
+                            roadWork.svgToLoc = converter.kmToSvg(roadWork.kmToLoc);
+
+                            roadWork.start = anwbRoadWork.start;
+                            roadWork.startDate = anwbRoadWork.startDate;
+                            roadWork.stop = anwbRoadWork.stop;
+                            roadWork.stopDate = anwbRoadWork.stopDate;
+
+                            road.roadWorks.push(roadWork);
                         }
-                        for (const radar of road.events.radars) {
-                            radar.kmFromLoc = converter.locGpsToKm(radar.fromLoc);
-                            radar.kmToLoc = converter.locGpsToKm(radar.toLoc);
-                            radar.kmLoc = converter.locGpsToKm(radar.loc);
-                            radar.svgFromLoc = converter.locKmToSvg(radar.kmFromLoc);
-                            radar.svgToLoc = converter.locKmToSvg(radar.kmToLoc);
-                            radar.svgLoc = converter.locKmToSvg(radar.kmLoc);
+
+                        for (const anwbRadar of anwbRoad.events.radars) {
+                            let radar = new Radar();
+                            radar.description = anwbRadar.description;
+                            radar.location = anwbRadar.location;
+                            radar.reason = anwbRadar.reason;
+                            radar.from = anwbRadar.from;
+                            radar.to = anwbRadar.to;
+                            radar.gpsFromLoc = anwbRadar.fromLoc;
+                            radar.gpsToLoc = anwbRadar.toLoc;
+                            radar.kmFromLoc = converter.gpsToKm(radar.gpsFromLoc);
+                            radar.kmToLoc = converter.gpsToKm(radar.gpsToLoc);
+                            radar.svgFromLoc = converter.kmToSvg(radar.kmFromLoc);
+                            radar.svgToLoc = converter.kmToSvg(radar.kmToLoc);
+                            
+                            radar.gpsLoc = anwbRadar.loc;
+                            radar.kmLoc = converter.gpsToKm(radar.gpsLoc);
+                            radar.svgLoc = converter.kmToSvg(radar.kmLoc);
+
+                            road.radars.push(radar);
                         }
+
+                        result.roadEntries.push(road);
                     }
+
                     return result;
                 })
         );

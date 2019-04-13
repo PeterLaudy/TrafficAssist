@@ -1,29 +1,16 @@
-export class GPSLocation {
-    lat: number;
-    lon: number;
-}
+import { GpsLocation } from '../classes/location.model';
 
-export class KmLocation {
-    x: number;
-    y: number;
-}
-
-export class SvgLocation {
-    x: number;
-    y: number;
-}
-
-export class Event {
+export interface AnwbEvent {
     alertC: string;
     text: string;
 }
 
-export class TrafficJam {
+export interface AnwbTrafficJam {
     msgNr: string;
     from: string;
-    fromLoc: GPSLocation;
+    fromLoc: GpsLocation;
     to: string;
-    toLoc: GPSLocation;
+    toLoc: GpsLocation;
     location: string;
     segStart: string;
     segEnd: string;
@@ -33,19 +20,15 @@ export class TrafficJam {
     distance: number;
     reason: string;
     description: string;
-    events: Event[];
-    kmFromLoc?: KmLocation;
-    kmToLoc?: KmLocation;
-    svgFromLoc?: SvgLocation;
-    svgToLoc?: SvgLocation;
+    events: AnwbEvent[];
 }
 
-export class RoadWork {
+export interface AnwbRoadWork {
     msgNr: string;
     from: string;
-    fromLoc: GPSLocation;
+    fromLoc: GpsLocation;
     to: string;
-    toLoc: GPSLocation;
+    toLoc: GpsLocation;
     location: string;
     segStart: string;
     segEnd: string;
@@ -55,48 +38,37 @@ export class RoadWork {
     stopDate: string;
     reason: string;
     description: string;
-    events: Event[];
-    kmFromLoc?: KmLocation;
-    kmToLoc?: KmLocation;
-    svgFromLoc?: SvgLocation;
-    svgToLoc?: SvgLocation;
+    events: AnwbEvent[];
 }
 
-export class Radar {
+export interface AnwbRadar {
     msgNr: string;
     from: string;
-    fromLoc: GPSLocation;
+    fromLoc: GpsLocation;
     to: string;
-    toLoc: GPSLocation;
-    loc: GPSLocation;
+    toLoc: GpsLocation;
+    loc: GpsLocation;
     location: string;
     segStart: string;
     segEnd: string;
     reason: string;
     description: string;
-    events: Event[];
-    svgPosition?: string;
-    kmFromLoc?: KmLocation;
-    kmToLoc?: KmLocation;
-    kmLoc?: KmLocation;
-    svgFromLoc?: SvgLocation;
-    svgToLoc?: SvgLocation;
-    svgLoc?: SvgLocation;
+    events: AnwbEvent[];
 }
 
-export class Events {
-    trafficJams: TrafficJam[];
-    roadWorks: RoadWork[];
-    radars: Radar[];
+export interface Events {
+    trafficJams: AnwbTrafficJam[];
+    roadWorks: AnwbRoadWork[];
+    radars: AnwbRadar[];
 }
 
-export class RoadEntry {
+export interface AnwbRoadEntry {
     road: string;
     roadType: string;
     events: Events;
 }
 
-export class AnwbObject {
+export interface AnwbModel {
     dateTime: string;
-    roadEntries: RoadEntry[];
+    roadEntries: AnwbRoadEntry[];
 }

@@ -1,6 +1,5 @@
 import { Directive, ElementRef, Input, AfterViewInit } from '@angular/core';
-import { last } from 'rxjs/operators';
-import { SvgLocation } from '../services/anwb.model';
+import { SvgLocation } from '../classes/location.model';
 
 @Directive({
     selector: '[appPolyline]'

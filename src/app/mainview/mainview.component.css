@@ -79,11 +79,13 @@ svg.distance {
     width: 64px;
     height: 48px;
     position: absolute;
+    background-color: #DEB887C0;
 }
 
 svg.distance text {
     font-size: 80px;
-    fill: black;
+    fill: blue;
+    font-weight: bold;
     animation: none;
 }
 
@@ -91,6 +93,12 @@ polyline.detail {
     stroke: green;
     stroke-width: 0.05px;
     opacity: 0.25;
+}
+
+polyline.traffic-detail {
+    stroke: red;
+    stroke-width: 0.06px;
+    opacity: 0.75;
 }
 
 polyline.route-detail {

@@ -1,7 +1,4 @@
-import { GPSConverter } from '../classes/gps-converter';
-import { KmLocation, SvgLocation } from './anwb.model';
-
-export class Step {
+export interface Step {
     distance: number;
     duration: number;
     type: number;
@@ -11,61 +8,69 @@ export class Step {
     exit_number?: number;
 }
 
-export class Segment {
+export interface Segment {
     distance: number;
     duration: number;
     steps: Step[];
 }
 
-export class Summary {
+export interface Summary {
+    value: number;
+    distance: number;
+    amount: number;
+}
+
+export interface Roadaccessrestrictions {
+    values: number[][];
+    summary: Summary[];
+}
+
+export interface Extras {
+    roadaccessrestrictions: Roadaccessrestrictions;
+}
+
+export interface Warning {
+    code: number;
+    message: string;
+}
+
+export interface Summary2 {
     distance: number;
     duration: number;
 }
 
-export class Properties {
+export interface Properties {
     segments: Segment[];
-    summary: Summary;
+    extras: Extras;
+    warnings: Warning[];
+    summary: Summary2;
     way_points: number[];
 }
 
-export class Geometry {
+export interface Geometry {
     coordinates: number[][];
     type: string;
 }
 
-export class KmGeometry {
-    coordinates: KmLocation[];
-    type: string;
-}
-
-export class SvgGeometry {
-    coordinates: SvgLocation[];
-    type: string;
-}
-
-export class Feature {
+export interface Feature {
     bbox: number[];
     type: string;
     properties: Properties;
     geometry: Geometry;
-    kmBBox?: number[];
-    svgBBox?: number[];
-    kmGeometry?: KmGeometry;
-    svgGeometry?: SvgGeometry;
 }
 
-export class Query {
+export interface Query {
     coordinates: number[][];
     profile: string;
     format: string;
 }
 
-export class Engine {
+export interface Engine {
     version: string;
     build_date: Date;
 }
 
-export class Metadata {
+export interface Metadata {
     attribution: string;
     service: string;
     timestamp: number;
@@ -73,12 +78,9 @@ export class Metadata {
     engine: Engine;
 }
 
-export class OpenRouteModel {
+export interface OpenRouteModel {
     type: string;
     features: Feature[];
     bbox: number[];
     metadata: Metadata;
-    converter?: GPSConverter;
-    kmBBox?: number[];
-    svgBBox?: number[];
 }

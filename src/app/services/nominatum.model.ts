@@ -4,14 +4,10 @@ export class Nominatum {
     osmType: string;
     osmID: number;
     boundingbox: string[];
-    lat: string;
-    lon: string;
+    lat: number;
+    lon: number;
     displayName: string;
     class: string;
     type: string;
     importance: number;
-    kmX?: number;
-    kmY?: number;
-    svgX?: number;
-    svgY?: number;
 }

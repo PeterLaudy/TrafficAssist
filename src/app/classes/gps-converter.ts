@@ -1,4 +1,4 @@
-import { GPSLocation, KmLocation, SvgLocation } from '../services/anwb.model';
+import { GpsLocation, KmLocation, SvgLocation } from '../classes/location.model';
 
 export class GPSConverter {
 
@@ -28,7 +28,7 @@ export class GPSConverter {
         this.yDif = (kmBBox[1] - kmBBox[3]) * (this.scale / 2) - kmBBox[1] * this.scale;
     }
 
-    public gpsToKm(lon: number, lat: number): number[] {
+    private _gpsToKm(lon: number, lat: number): number[] {
         // Adjust for the radius at the given latitude.
         const xRadius = 40075 * Math.cos(Math.PI * lat / 180);
         const result: number[] = [];
@@ -37,9 +37,9 @@ export class GPSConverter {
         return result;
     }
 
-    public locGpsToKm(loc: GPSLocation): KmLocation {
+    public gpsToKm(loc: GpsLocation): KmLocation {
         // Adjust for the radius at the given latitude.
-        const kmLoc = this.gpsToKm(loc.lon, loc.lat);
+        const kmLoc = this._gpsToKm(loc.lon, loc.lat);
         const result = new KmLocation();
         result.x = kmLoc[0];
         result.y = kmLoc[1];
@@ -48,8 +48,8 @@ export class GPSConverter {
 
     public bBoxGpsToKm(bbox: number[]): number[] {
         const result: number[] = [];
-        const loc1 = this.gpsToKm(bbox[0], bbox[1]);
-        const loc2 = this.gpsToKm(bbox[2], bbox[3]);
+        const loc1 = this._gpsToKm(bbox[0], bbox[1]);
+        const loc2 = this._gpsToKm(bbox[2], bbox[3]);
         result.push(loc1[0]);
         result.push(loc1[1]);
         result.push(loc2[0]);
@@ -57,7 +57,7 @@ export class GPSConverter {
         return result;
     }
 
-    public kmToSvg(x: number, y: number): number[] {
+    private _kmToSvg(x: number, y: number): number[] {
         // Adjust for the radius at the given latitude.
         const result: number[] = [];
         result.push(x * this.scale + this.xDif);
@@ -65,9 +65,9 @@ export class GPSConverter {
         return result;
     }
 
-    public locKmToSvg(loc: KmLocation): SvgLocation {
+    public kmToSvg(loc: KmLocation): SvgLocation {
         // Adjust for the radius at the given latitude.
-        const svgLoc = this.kmToSvg(loc.x, loc.y);
+        const svgLoc = this._kmToSvg(loc.x, loc.y);
         const result = new SvgLocation();
         result.x = svgLoc[0];
         result.y = svgLoc[1];
@@ -76,8 +76,8 @@ export class GPSConverter {
 
     public bBoxKmToSvg(bbox: number[]): number[] {
         const result: number[] = [];
-        const loc1 = this.kmToSvg(bbox[0], bbox[1]);
-        const loc2 = this.kmToSvg(bbox[2], bbox[3]);
+        const loc1 = this._kmToSvg(bbox[0], bbox[1]);
+        const loc2 = this._kmToSvg(bbox[2], bbox[3]);
         result.push(loc1[0]);
         result.push(loc1[1]);
         result.push(loc2[0]);
@@ -85,8 +85,8 @@ export class GPSConverter {
         return result;
     }
 
-    public locGpsToSvg(loc: GPSLocation): SvgLocation {
-        return this.locKmToSvg(this.locGpsToKm(loc));
+    public gpsToSvg(loc: GpsLocation): SvgLocation {
+        return this.kmToSvg(this.gpsToKm(loc));
     }
 
     public bBoxGpsToSvg(bbox: number[]): number[] {

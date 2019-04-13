@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import { OverpassModel, Element } from './overpass.model';
 import { map } from 'rxjs/internal/operators/map';
 import { GPSConverter } from '../classes/gps-converter';
-import { GPSLocation } from './anwb.model';
+import { GpsLocation } from '../classes/location.model';
+import { City } from '../classes/city';
 
 @Injectable()
 
@@ -12,7 +13,7 @@ export class OverpassService {
 
     constructor(private http: HttpClient) { }
 
-    getCitiesAndRouteDetails(locations: GPSLocation[], bbox: number[]): Observable<{ cities: Element[], roads: GPSLocation[][]}> {
+    getCitiesAndRouteDetails(locations: GpsLocation[], bbox: number[]): Observable<{ cities: City[], roads: GpsLocation[][] }> {
         console.log('Getting a list of cities and details of the route');
         const converter = new GPSConverter(bbox);
         const x1 = bbox[0] - (bbox[2] - bbox[0]) / 2;
@@ -30,20 +31,21 @@ export class OverpassService {
         return this.http.post<OverpassModel>(url, data)
             .pipe(
                 map(overpass => {
-                    const cities: Element[] = new Array<Element>();
-                    for (const city of overpass.elements) {
-                        if ((city.type === 'node') && city.tags && city.tags.place) {
-                            let loc = converter.gpsToKm(city.lon, city.lat);
-                            city.kmX = loc[0];
-                            city.kmY = loc[1];
-                            loc = converter.kmToSvg(city.kmX, city.kmY);
-                            city.svgX = loc[0];
-                            city.svgY = loc[1];
+                    const cities: City[] = [];
+                    for (const element of overpass.elements) {
+                        if ((element.type === 'node') && element.tags && element.tags.place) {
+                            let city = new City();
+                            city.name = element.tags.name;
+                            city.population = element.tags.population;
+                            let gpsLoc = new GpsLocation();
+                            gpsLoc.lon = element.lon;
+                            gpsLoc.lat = element.lat;
+                            city.svgLoc = converter.gpsToSvg(gpsLoc);
                             cities.push(city);
                         }
                     }
 
-                    const roads: GPSLocation[][] = [];
+                    const roads: GpsLocation[][] = [];
                     overpass.elements.forEach(element => {
                         if ((element.type === 'way') && (null != element.tags) && (null != element.tags.highway)) {
                             const hw = element.tags.highway;
@@ -53,11 +55,11 @@ export class OverpassService {
                                 (hw === 'trunk-link') || (hw === 'primary_link') || (hw === 'secondary_link') ||
                                 (hw === 'tertiary_link') || (hw === 'road') || (hw === 'motorway_junction') ||
                                 (hw === 'turning_loop') || (hw === 'mini_roundabout')) {
-                                let nextWay: GPSLocation[] = [];
+                                let nextWay: GpsLocation[] = [];
                                 element.nodes.forEach(nodeRef => {
                                     overpass.elements.forEach(element => {
                                         if (element.id === nodeRef) {
-                                            const gps = new GPSLocation();
+                                            const gps = new GpsLocation();
                                             gps.lon = element.lon;
                                             gps.lat = element.lat;
                                             nextWay.push(gps);
