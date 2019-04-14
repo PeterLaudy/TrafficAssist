@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { NominatumService } from '../services/nominatum.service';
+import { NominatimService } from '../services/nominatim.service';
 import { OpenRouteService } from '../services/openroute.service';
 import { RouteModel } from '../classes/route.model';
 import { AnwbService } from '../services/anwb.service';
@@ -60,7 +60,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
      * @param fullScreen A simple wrapper around the browser fullscreen API
      */
     constructor(
-        private nominatum: NominatumService,
+        private nominatum: NominatimService,
         private openRoute: OpenRouteService,
         private anwb: AnwbService,
         private overpass: OverpassService,

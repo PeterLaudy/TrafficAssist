@@ -57,7 +57,9 @@
             <polyline class="detail" [appPolyline]="road" />
         </g>
         <polyline class="route-detail" [appPolyline]="routeDetails.routeInfo.kmCoordinates" />
-        <circle class="route-detail" [attr.cx]="myLocation.kmLoc.x"  [attr.cy]="myLocation.kmLoc.y" r="0.06"/>
+        <g *ngIf="null != myLocation">
+            <circle class="route-detail" [attr.cx]="myLocation.kmLoc.x"  [attr.cy]="myLocation.kmLoc.y" r="0.06"/>
+        </g>
         <g *ngIf="null != routeAndTrafficCombo.trafficJamList">
             <g *ngFor="let trafficJam of routeAndTrafficCombo.trafficJamList">
                 <polyline class="traffic-detail" [appPolyline]="routeDetails.routeInfo.kmCoordinates"

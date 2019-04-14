@@ -30,11 +30,13 @@ export class AnwbService {
                     let result = new TrafficModel();
                     for (const anwbRoad of anwbInfo.roadEntries) {
                         let road = new RoadEntry();
+                        road.name = anwbRoad.road;
+                        road.type = anwbRoad.roadType;
                         for (const anwbTrafficJam of anwbRoad.events.trafficJams) {
                             let trafficJam = new TrafficJam();
-                            trafficJam.description = trafficJam.description;
-                            trafficJam.location = trafficJam.location;
-                            trafficJam.reason = trafficJam.reason;
+                            trafficJam.description = anwbTrafficJam.description;
+                            trafficJam.location = anwbTrafficJam.location;
+                            trafficJam.reason = anwbTrafficJam.reason;
                             trafficJam.from = anwbTrafficJam.from;
                             trafficJam.to = anwbTrafficJam.to;
                             trafficJam.gpsFromLoc = anwbTrafficJam.fromLoc;

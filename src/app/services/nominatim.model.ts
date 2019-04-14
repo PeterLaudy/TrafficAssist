@@ -1,7 +1,7 @@
 /**
- * @class Nominatum
+ * @class NominatimModel
  */
-export class Nominatum {
+export class NominatimModel {
     placeID: number;
     licence: string;
     osmType: string;

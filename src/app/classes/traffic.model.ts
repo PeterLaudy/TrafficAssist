@@ -58,8 +58,8 @@ export class Radar extends BaseEvent {
  * @class RoadEntry
  */
 export class RoadEntry {
-    road: string;
-    roadType: string;
+    name: string;
+    type: string;
     trafficJams: TrafficJam[] = [];
     roadWorks: RoadWork[] = [];
     radars: Radar[] = [];

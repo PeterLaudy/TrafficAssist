@@ -1,27 +1,25 @@
 # TrafficAssist
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.5.
+This project was started as an assignment at an Angular training. Because of some feature creep it now looks more like a navigation system.
 
-## Development server
+It has been put on GitHub so I can have a look at how I solved certain issues no matter where I'm working. As a free-lancer I'm not always working from the same desk or even from the same development system.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Original idea
 
-## Code scaffolding
+The original idea was to show traffic information about my route to work. You know the way, so no need for a navigation system, but you are interested in any traffic jams on your route.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## The used services
 
-## Build
+The route is calulated using [openroute service](https://openrouteservice.org/). It takes two GPS coordinates which are converted from street addresses by [Nominatim](https://nominatim.openstreetmap.org/). The route is combined with the traffic information from the Dutch [ANWB](https://www.anwb.nl/). Some extra details information is retrieved from [Overpass API](https://overpass-api.de/).
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+## What do I see on the screen?
 
-## Running unit tests
+On the landing page you can enter the two addresses between which the route is calculated. Pressing ENTER or RETURN will take you to the other page which will show information about the route and the traffic situation. Information is shown as it comes in from the external services. It will start with an overview of the route itself, soon followed by the traffic information. The cities in the areas you will be travelling in will be a bit later, because that service has a bit more work to do. At the same time you will also see a semi-transparent overlay with the 4x4 km area where you are locating according to your browser. It show some extra roads around the locations where you need to change directions.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## License
 
-## Running end-to-end tests
+This software is released under the MIT license, basically meaning that you can do anything with it you want.
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+## Roadmap
 
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+Actually I like the software as is. I started the project so I would easier remember the things I learned during the Angular workshop. I am thinking about adding some unit tests to the code, since automatic testing of software is key in any serious software project.

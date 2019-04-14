@@ -83,6 +83,7 @@ export class OpenRouteService {
                             for (const step of segment.steps) {
                                 let nextStep = new StepInfo;
                                 nextStep.coordinateIndex = step.way_points[0] + coordinateOffset;
+                                nextStep.name = step.name;
                                 nextStep.instruction = step.instruction;
                                 nextStep.distance = step.distance;
                                 nextStep.duration = step.duration;

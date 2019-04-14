@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { NominatumService } from './services/nominatum.service';
+import { NominatimService } from './services/nominatim.service';
 import { HttpClientModule } from '@angular/common/http';
 import { OpenRouteService } from './services/openroute.service';
 import { AnwbService } from './services/anwb.service';
@@ -27,7 +27,7 @@ import { CanDeactivatePage } from './classes/can-deactivate-page';
         HttpClientModule
     ],
     providers: [
-        NominatumService,
+        NominatimService,
         OpenRouteService,
         AnwbService,
         OverpassService,

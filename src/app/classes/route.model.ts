@@ -6,6 +6,7 @@ import { GpsLocation, KmLocation, SvgLocation } from '../classes/location.model'
  */
 export class StepInfo {
     coordinateIndex: number;
+    name: string;
     distance: number;
     duration: number;
     instruction: string;

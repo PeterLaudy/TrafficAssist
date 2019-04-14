@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Nominatum } from './nominatum.model';
+import { NominatimModel } from './nominatim.model';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -9,9 +9,9 @@ import { GpsLocation } from '../classes/location.model';
 
 /**
  * Class to use the Nominatum web-server to convert street addresses to GPS coordinates.
- * @class NominatumService
+ * @class NominatimService
  */
-export class NominatumService {
+export class NominatimService {
 
     constructor(private http: HttpClient) { }
 
@@ -22,7 +22,7 @@ export class NominatumService {
      */
     getLocation(address: string): Observable<GpsLocation> {
         console.log(`Getting location for ${address}`);
-        return this.http.get<Nominatum[]>(`https://nominatim.openstreetmap.org/search?q=${address}&format=json`)
+        return this.http.get<NominatimModel[]>(`https://nominatim.openstreetmap.org/search?q=${address}&format=json`)
             .pipe(
                 map(locations => {
                     let result = new GpsLocation();
