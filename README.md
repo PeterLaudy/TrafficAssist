@@ -10,11 +10,11 @@ The original idea was to show traffic information about my route to work. You kn
 
 ## The used services
 
-The route is calulated using [openroute service](https://openrouteservice.org/). It takes two GPS coordinates which are converted from street addresses by [Nominatim](https://nominatim.openstreetmap.org/). The route is combined with the traffic information from the Dutch [ANWB](https://www.anwb.nl/). Some extra details information is retrieved from [Overpass API](https://overpass-api.de/).
+The route is calulated using [openroute service](https://openrouteservice.org/). It takes two GPS coordinates which are converted from street addresses by [Nominatim](https://nominatim.openstreetmap.org/). The route is combined with the traffic information from the Dutch [ANWB](https://www.anwb.nl/). Some extra detailed information is retrieved from [Overpass API](https://overpass-api.de/).
 
 ## What do I see on the screen?
 
-On the landing page you can enter the two addresses between which the route is calculated. Pressing ENTER or RETURN will take you to the other page which will show information about the route and the traffic situation. Information is shown as it comes in from the external services. It will start with an overview of the route itself, soon followed by the traffic information. The cities in the areas you will be travelling in will be a bit later, because that service has a bit more work to do. At the same time you will also see a semi-transparent overlay with the 4x4 km area where you are locating according to your browser. It show some extra roads around the locations where you need to change directions.
+On the landing page you can enter the two addresses between which the route is calculated. Pressing ENTER or RETURN will take you to the other page which will show information about the route and the traffic situation. Information is shown as it comes in from the external services. It will start with an overview of the route itself, soon followed by the traffic information. The cities in the areas you will be travelling in will be a bit later, because that service has a bit more work to do. At the same time you will also see a semi-transparent overlay with the 4x4 km area where you are located according to your browser. It shows some extra roads around the locations where you need to change directions.
 
 ## License
 
