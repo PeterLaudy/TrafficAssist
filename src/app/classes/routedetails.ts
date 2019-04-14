@@ -20,13 +20,28 @@ export class RouteDetails {
      */
     public updateDetailedLocation(myLoc: AccurateLocation, stepIndex: number) {
         if (stepIndex < this.routeInfo.directions.length) {
+
             /**
-             * We show a 4x4 km section around the current location as the overlay.
+             * We show a around the current location as the overlay.
+             * The size of the section depends on de distance to the nearest of the
+             * two locations where instructions are available.
              * The current location is at 20% of the bottom in the middle between
              * left and right.
              */
-            let bbox = [myLoc.kmLoc.x - 2, myLoc.kmLoc.y - 0.8,
-                        myLoc.kmLoc.x + 2, myLoc.kmLoc.y + 3.2];
+            let distance = myLoc.kmLoc.distance(
+                this.routeInfo.kmCoordinates[this.routeInfo.directions[stepIndex].coordinateIndex]
+            );
+            if (stepIndex > 0) {
+                distance = Math.min(
+                    distance,
+                    myLoc.kmLoc.distance(
+                        this.routeInfo.kmCoordinates[this.routeInfo.directions[stepIndex - 1].coordinateIndex]
+                ));
+            }
+            distance = Math.max(0.5, Math.min(1, distance));
+
+            let bbox = [myLoc.kmLoc.x - distance, myLoc.kmLoc.y - (distance * 0.4),
+                        myLoc.kmLoc.x + distance, myLoc.kmLoc.y + (distance * 1.6)];
             this.viewbox = `${bbox[0]} ${-bbox[3]} ${bbox[2] - bbox[0]} ${bbox[3] - bbox[1]}`;
  
             /**

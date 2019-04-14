@@ -32,11 +32,6 @@ export class NextStep {
             yDif = loc2.y - loc1.y;
         }
 
-        if ((0 == xDif) && (0 == yDif)) {
-            console.error('Locations should not be the same.');
-            throw 'Locations should not be the same.';
-        }
-
         this.angle = Math.atan2(xDif, yDif);
     }
 
