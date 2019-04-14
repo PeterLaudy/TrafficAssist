@@ -53,7 +53,7 @@ export class NextStep {
          * The simplest check is the distance. If it is less then
          * 10 meters, we assume to have reached the location.
          */
-        if (location.distance(this.origin) < 10) {
+        if (location.distance(this.origin) < 0.01) {
             return true;
         }
 

@@ -55,7 +55,7 @@ export class OpenRouteService {
      * @param destination The GPS location of the destination address.
      */
     getRoute(start: GpsLocation, destination: GpsLocation): Observable<RouteModel> {
-        console.log(`Getting route for ${start} => ${destination}`);
+        console.log(`Getting route for (${start.lon},${start.lat}) => (${destination.lon},${destination.lat})`);
         const url: string = `https://api.openrouteservice.org/v2/directions/driving-car?`
             + `api_key=${this.key}&start=`
             + `${start.lon},${start.lat}&end=${destination.lon},${destination.lat}`;
