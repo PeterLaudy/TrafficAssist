@@ -8,10 +8,20 @@ import { GPSConverter } from '../classes/gps-converter';
 
 @Injectable()
 
+/**
+ * Class which can get the Dutch traffic information from the ANWB web-server.
+ * @class AnwbService
+ */
 export class AnwbService {
 
     constructor(private http: HttpClient) { }
 
+    /**
+     * Make a call to the web-server to get the traffic information and
+     * convert it to a more generic model. This way ot is easier to implement
+     * other traffic servers as well.
+     * @param converter The class to convert GPS coordinates to km and SVG.
+     */
     getTraficInfo(converter: GPSConverter): Observable<TrafficModel> {
         console.log('Getting trafic information');
         return this.http.get<AnwbModel>('https://www.anwb.nl/feeds/gethf')

@@ -56,11 +56,11 @@
         <g *ngFor="let road of routeDetails.roads">
             <polyline class="detail" [appPolyline]="road" />
         </g>
-        <polyline class="route-detail" [appPolyline]="routeDetails.route" />
+        <polyline class="route-detail" [appPolyline]="routeDetails.routeInfo.kmCoordinates" />
         <circle class="route-detail" [attr.cx]="myLocation.kmLoc.x"  [attr.cy]="myLocation.kmLoc.y" r="0.06"/>
         <g *ngIf="null != routeAndTrafficCombo.trafficJamList">
             <g *ngFor="let trafficJam of routeAndTrafficCombo.trafficJamList">
-                <polyline class="traffic-detail" [appPolyline]="routeDetails.route"
+                <polyline class="traffic-detail" [appPolyline]="routeDetails.routeInfo.kmCoordinates"
                           first="{{trafficJam.first}}" last="{{trafficJam.last}}" />
             </g>
         </g>

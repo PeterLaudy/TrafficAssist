@@ -2,6 +2,13 @@ import { TrafficModel, Radar, TrafficJam } from './traffic.model';
 import { RouteModel } from './route.model';
 import { KmLocation } from './location.model';
 
+/**
+ * Class which combines the route and traffic information.
+ * Since these (may) come from different servers, the GPS
+ * locations might not always be 100% spot on. So we make
+ * the comparisons a bit loose.
+ * @class RouteAndTrafficCombination
+ */
 export class RouteAndTrafficCombination {
 
     trafficJamList: TrafficJam[];
@@ -21,9 +28,15 @@ export class RouteAndTrafficCombination {
         this.trafficJamList = [];
         for (const road of traffic.roadEntries) {
             for (const trafficJam of road.trafficJams) {
-                const first = this.getNearestSegment(trafficJam.kmFromLoc);
-                const last = this.getNearestSegment(trafficJam.kmToLoc);
+                // Get the nearest coordinates for the start and end of the traffic jam.
+                const first = this.getNearestCoordinate(trafficJam.kmFromLoc);
+                const last = this.getNearestCoordinate(trafficJam.kmToLoc);
+                
+                // Is one of the two is on the route, we assume the taffic jam is.
+                // This will include traffic jams wich are partially on our route.
                 const isOnRoute = this.isOnSegment(trafficJam.kmFromLoc, first) || this.isOnSegment(trafficJam.kmToLoc, last);
+
+                // Check if the traffic jam is not going in the opposite direction.
                 if (first < last) {
                     if (isOnRoute) {
                         trafficJam.first = first;
@@ -46,10 +59,17 @@ export class RouteAndTrafficCombination {
         this.radarList = [];
         for (const road of traffic.roadEntries) {
             for (const radar of road.radars) {
-                const index: number = this.getNearestSegment(radar.kmLoc);
+                // Get the nearest coordinate to the camera location ...
+                const index: number = this.getNearestCoordinate(radar.kmLoc);
+
+                // ... and check if the camera is on it.
                 if (this.isOnSegment(radar.kmFromLoc, index)) {
-                    const first = this.getNearestSegment(radar.kmFromLoc);
-                    const last = this.getNearestSegment(radar.kmToLoc)
+                    // Get the nearest coordinates for the start and end of
+                    // road section where the camera is set up.
+                    const first = this.getNearestCoordinate(radar.kmFromLoc);
+                    const last = this.getNearestCoordinate(radar.kmToLoc)
+
+                    // Also check if the camera is not set up in the opposite direction.
                     if (first < last) {
                         radar.first = first;
                         radar.last = last;
@@ -66,6 +86,7 @@ export class RouteAndTrafficCombination {
      * Check if the given location is at the given segment of the calculated route.
      * @param location The location to check
      * @param index The index of the first coordinate of the segment
+     * @todo Check if a margin of 1 km is not to inaccurate.
      */
     private isOnSegment(location: KmLocation, index: number): boolean {
         const MARGIN = 1; // Margin in x and y directions in kilometers.
@@ -80,7 +101,7 @@ export class RouteAndTrafficCombination {
      * Find the index of the coordinate on the route closest to the given location.
      * @param location The location for which to find the closest coordinate in the list.
      */
-    private getNearestSegment(location: KmLocation): number {
+    private getNearestCoordinate(location: KmLocation): number {
         let minDist = 1000;
         let result = 0;
         for (let i = 0; i < this.route.kmCoordinates.length; i++) {

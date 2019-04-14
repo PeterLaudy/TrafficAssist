@@ -2,10 +2,18 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 
+/**
+ * Simple wrapper class to access the Full Screen API of the browser.
+ * @class FullScreen
+ */
 export class FullScreen {
 
     constructor() { }
 
+    /**
+     * Check if we are in full screen mode or not and then toggle the mode.
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API|Mozilla} for more info.
+     */
     public toggleFullscreen() {
         const doc: any = window.document as Document & {
             exitFullscreen: any;

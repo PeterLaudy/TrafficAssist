@@ -1,10 +1,17 @@
 import { GPSConverter } from './gps-converter';
 
+/**
+ * @class GpsLocation
+ */
 export class GpsLocation {
     public lat: number;
     public lon: number;
 }
 
+/**
+ * This has a few convieniance methods.
+ * @class KmLocation
+ */
 export class KmLocation {
     public x: number;
     public y: number;
@@ -31,11 +38,19 @@ export class KmLocation {
     }
 }
 
+/**
+ * @class SvgLocation
+ */
 export class SvgLocation {
     public x: number;
     public y: number;
 }
 
+/**
+ * Class which also contains the accuracy of the location.
+ * Used in the current location received from a device.
+ * @class AccurateLocation
+ */
 export class AccurateLocation {
 
     public kmLoc: KmLocation;

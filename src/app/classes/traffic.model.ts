@@ -1,5 +1,8 @@
 import { GpsLocation, KmLocation, SvgLocation } from '../classes/location.model';
 
+/**
+ * @class BaseEvent
+ */
 export class BaseEvent {
     from: string;
     to: string;
@@ -18,12 +21,18 @@ export class BaseEvent {
     last: number;
 }
 
+/**
+ * @class TrafficJam
+ */
 export class TrafficJam extends BaseEvent {
     location: string;
     delay: number;
     distance: number;
 }
 
+/**
+ * @class RoadWork
+ */
 export class RoadWork extends BaseEvent {
     location: string;
     start: Date;
@@ -32,6 +41,9 @@ export class RoadWork extends BaseEvent {
     stopDate: string;
 }
 
+/**
+ * @class Radar
+ */
 export class Radar extends BaseEvent {
     location: string;
     gpsLoc: GpsLocation;
@@ -42,6 +54,9 @@ export class Radar extends BaseEvent {
     }
 }
 
+/**
+ * @class RoadEntry
+ */
 export class RoadEntry {
     road: string;
     roadType: string;
@@ -50,6 +65,9 @@ export class RoadEntry {
     radars: Radar[] = [];
 }
 
+/**
+ * @class TrafficModel
+ */
 export class TrafficModel {
     dateTime: string;
     roadEntries: RoadEntry[] = [];

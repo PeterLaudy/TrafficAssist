@@ -9,6 +9,7 @@ import { Router, ActivatedRoute, ParamMap } from '@angular/router';
 
 /**
  * The view where the user can enter the addresses between which the route is calculated.
+ * @class HomeComponent
  */
 export class HomeComponent implements OnInit, AfterViewInit  {
 

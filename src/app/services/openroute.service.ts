@@ -9,12 +9,35 @@ import { RouteModel, StepInfo } from '../classes/route.model';
 
 @Injectable()
 
-export class OpenrouteService {
+/**
+ * Class to communicate with the OpenRoute web-server.
+ * It returns a route between two given GPS coordinates.
+ * Note that an API key must be used, You can apply for
+ * one at {@link https://openrouteservice.org/dev/|openroute service}
+ * where you need to create an account.
+ * @class OpenRouteService
+ */
+export class OpenRouteService {
 
+    /**
+     * The API key for this service.
+     * It is stored in a seperate file (/assets/openrouteservice.key).
+     * This way the key does not get stored in any version control repository.
+     * For git use git update-index --assume-unchanged.
+     */
     private key: string;
 
     constructor(private http: HttpClient) { }
 
+    /**
+     * Gets the API key from the server. This is not safe of course,
+     * but hey, it is not my credit card number or anything like that.
+     * But yes, to make things secure you would use this key only on
+     * your server, not on the client side. That would mean that the
+     * service itself also needed to be called from a server, not from
+     * the browser. The project would then no longer be an Angular
+     * only solution.
+     */
     getAPIKey(): Observable<any> {
         return this.http.get<any>('assets/openrouteservice.key')
             .pipe(
@@ -24,6 +47,13 @@ export class OpenrouteService {
             );
     }
 
+    /**
+     * Make a call to the web-server and return the route in a more generic
+     * model, so it is easier to switch to a different service. Note that a
+     * lot of information is lost this way.
+     * @param start The GPS location of the start address.
+     * @param destination The GPS location of the destination address.
+     */
     getRoute(start: GpsLocation, destination: GpsLocation): Observable<RouteModel> {
         console.log(`Getting route for ${start} => ${destination}`);
         const url: string = `https://api.openrouteservice.org/v2/directions/driving-car?`
@@ -31,7 +61,6 @@ export class OpenrouteService {
             + `${start.lon},${start.lat}&end=${destination.lon},${destination.lat}`;
         return this.http.get<OpenRouteModel>(url)
             .pipe(
-                // Multiply all coordinates with 100 otherwise the lines are so thin, they are sometimes not rendered correctly in Chrome.
                 map(openRoute => {
                     let result = new RouteModel();
                     result.converter = new GPSConverter(openRoute.bbox);

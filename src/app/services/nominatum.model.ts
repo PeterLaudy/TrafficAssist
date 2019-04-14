@@ -1,3 +1,6 @@
+/**
+ * @class Nominatum
+ */
 export class Nominatum {
     placeID: number;
     licence: string;

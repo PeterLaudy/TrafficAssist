@@ -1,3 +1,6 @@
+/**
+ * @class Step
+ */
 export interface Step {
     distance: number;
     duration: number;
@@ -8,50 +11,77 @@ export interface Step {
     exit_number?: number;
 }
 
+/**
+ * @class Segment
+ */
 export interface Segment {
     distance: number;
     duration: number;
     steps: Step[];
 }
 
-export interface Summary {
+/**
+ * @class RoadAccessRestrictionSummary
+ */
+export interface RoadAccessRestrictionSummary {
     value: number;
     distance: number;
     amount: number;
 }
 
-export interface Roadaccessrestrictions {
+/**
+ * @class RoadAccessRestrictions
+ */
+export interface RoadAccessRestrictions {
     values: number[][];
-    summary: Summary[];
+    summary: RoadAccessRestrictionSummary[];
 }
 
+/**
+ * @class Extras
+ */
 export interface Extras {
-    roadaccessrestrictions: Roadaccessrestrictions;
+    roadaccessrestrictions: RoadAccessRestrictions;
 }
 
+/**
+ * @class Warning
+ */
 export interface Warning {
     code: number;
     message: string;
 }
 
-export interface Summary2 {
+/**
+ * @class PropertySummary
+ */
+export interface PropertySummary {
     distance: number;
     duration: number;
 }
 
+/**
+ * @class Properties
+ */
 export interface Properties {
     segments: Segment[];
     extras: Extras;
     warnings: Warning[];
-    summary: Summary2;
+    summary: PropertySummary;
     way_points: number[];
 }
 
+/**
+ * @class Geometry
+ */
 export interface Geometry {
     coordinates: number[][];
     type: string;
 }
 
+/**
+ * @class Feature
+ */
 export interface Feature {
     bbox: number[];
     type: string;
@@ -59,17 +89,26 @@ export interface Feature {
     geometry: Geometry;
 }
 
+/**
+ * @class Query
+ */
 export interface Query {
     coordinates: number[][];
     profile: string;
     format: string;
 }
 
+/**
+ * @class Engine
+ */
 export interface Engine {
     version: string;
     build_date: Date;
 }
 
+/**
+ * @class Metadata
+ */
 export interface Metadata {
     attribution: string;
     service: string;
@@ -78,6 +117,9 @@ export interface Metadata {
     engine: Engine;
 }
 
+/**
+ * @class OpenRouteModel
+ */
 export interface OpenRouteModel {
     type: string;
     features: Feature[];

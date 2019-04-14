@@ -1,10 +1,16 @@
 import { GpsLocation } from '../classes/location.model';
 
+/**
+ * @class AnwbEvent
+ */
 export interface AnwbEvent {
     alertC: string;
     text: string;
 }
 
+/**
+ * @class AnwbTrafficJam
+ */
 export interface AnwbTrafficJam {
     msgNr: string;
     from: string;
@@ -23,6 +29,9 @@ export interface AnwbTrafficJam {
     events: AnwbEvent[];
 }
 
+/**
+ * @class AnwbRoadWork
+ */
 export interface AnwbRoadWork {
     msgNr: string;
     from: string;
@@ -41,6 +50,9 @@ export interface AnwbRoadWork {
     events: AnwbEvent[];
 }
 
+/**
+ * @class AnwbRadar
+ */
 export interface AnwbRadar {
     msgNr: string;
     from: string;
@@ -56,18 +68,27 @@ export interface AnwbRadar {
     events: AnwbEvent[];
 }
 
-export interface Events {
+/**
+ * @class AnwbEvent
+ */
+export interface AnwbEvents {
     trafficJams: AnwbTrafficJam[];
     roadWorks: AnwbRoadWork[];
     radars: AnwbRadar[];
 }
 
+/**
+ * @class AnwbRoadEntry
+ */
 export interface AnwbRoadEntry {
     road: string;
     roadType: string;
-    events: Events;
+    events: AnwbEvents;
 }
 
+/**
+ * @class AnwbModel
+ */
 export interface AnwbModel {
     dateTime: string;
     roadEntries: AnwbRoadEntry[];

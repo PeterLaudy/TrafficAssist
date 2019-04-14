@@ -9,10 +9,29 @@ import { City } from '../classes/city';
 
 @Injectable()
 
+/**
+ * Class which can get Geo location data from the OpenStreetMap database.
+ * It uses a very specific query language of which an explanation is outside
+ * the scope of this project.
+ * @class OverpassService
+ */
 export class OverpassService {
 
     constructor(private http: HttpClient) { }
 
+    /**
+     * Make a call to the web-server and return the data in a more generic
+     * model, so it is easier to switch to a different service, although
+     * this will be quite a challenge to do.
+     * @param locations The locations around which we are interested in more
+     *                  detailed road information.
+     * @param bbox The bounding box of the area fo which we would like to
+     *             get a list of towns and cities. Mind you that the list
+     *             can become very large if the area is big. This will also
+     *             have a hughe effect on the response time. So don't plan
+     *             a trip from New York to San Fransisco without changing
+     *             this code to return a lot less data.
+     */
     getCitiesAndRouteDetails(locations: GpsLocation[], bbox: number[]): Observable<{ cities: City[], roads: GpsLocation[][] }> {
         console.log('Getting a list of cities and details of the route');
         const converter = new GPSConverter(bbox);

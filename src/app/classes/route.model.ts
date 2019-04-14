@@ -1,6 +1,9 @@
 import { GPSConverter } from '../classes/gps-converter';
 import { GpsLocation, KmLocation, SvgLocation } from '../classes/location.model';
 
+/**
+ * @class StepInfo
+ */
 export class StepInfo {
     coordinateIndex: number;
     distance: number;
@@ -8,6 +11,9 @@ export class StepInfo {
     instruction: string;
 }
 
+/**
+ * @class RouteModel
+ */
 export class RouteModel {
     gpsBBox: number[];
     kmBBox: number[];

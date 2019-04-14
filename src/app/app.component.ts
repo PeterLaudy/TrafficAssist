@@ -6,6 +6,9 @@ import { Component } from '@angular/core';
     styleUrls: ['./app.component.css']
 })
 
+/**
+ * @class AppComponent
+ */
 export class AppComponent {
     title = 'TrafficAssist';
 
