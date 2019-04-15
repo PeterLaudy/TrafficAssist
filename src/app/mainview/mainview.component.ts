@@ -41,15 +41,15 @@ export class MainviewComponent extends PageUnload implements OnInit {
     myLocation: AccurateLocation;
     demoTimer: Subscription = null;
 
-    stepIndex: number = 0;
+    stepIndex = 0;
     nextStep: NextStep;
     nextInstructionToSpeak: string = null;
-    distance: number = 0;
-    locationError: boolean = false;
+    distance = 0;
+    locationError = false;
 
-    routeDetails: RouteDetails
+    routeDetails: RouteDetails;
     routeAndTrafficCombo: RouteAndTrafficCombination;
-    
+
     /**
      * Create the view
      * @param nominatum The service to get the GPS coordinates for an address
@@ -215,7 +215,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
             .subscribe(result => {
                 this.cities = result.cities;
 
-                let details = new RouteDetails(this.routeInfo);
+                const details = new RouteDetails(this.routeInfo);
                 result.roads.forEach(road => {
                     const svgRoad: KmLocation[] = [];
                     road.forEach(loc => {
@@ -232,20 +232,20 @@ export class MainviewComponent extends PageUnload implements OnInit {
      * Start a demonstration of the spoken navigation.
      */
     startDemo() {
-        document.getElementById("home").hidden = true;
-        document.getElementById("reverse").hidden = true;
-        document.getElementById("demo").hidden = true;
+        document.getElementById('home').hidden = true;
+        document.getElementById('reverse').hidden = true;
+        document.getElementById('demo').hidden = true;
         let currentLocation = 0;
         this.stepIndex = 0;
         this.nextStep = new NextStep(this.routeInfo, 0);
         this.nextInstructionToSpeak = this.routeInfo.directions[0].instruction;
         this.demoTimer = timer(100, 250).subscribe(response => {
-            let loc = this.routeInfo.gpsCoordinates[currentLocation];
+            const loc = this.routeInfo.gpsCoordinates[currentLocation];
             this.updateLocation(loc, 25);
-            if (++currentLocation == this.routeInfo.gpsCoordinates.length) {
-                document.getElementById("home").hidden = false;
-                document.getElementById("reverse").hidden = false;
-                document.getElementById("demo").hidden = false;
+            if (++currentLocation === this.routeInfo.gpsCoordinates.length) {
+                document.getElementById('home').hidden = false;
+                document.getElementById('reverse').hidden = false;
+                document.getElementById('demo').hidden = false;
                 this.demoTimer.unsubscribe();
                 this.demoTimer = null;
             }
@@ -260,7 +260,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
             this.myLocationTimer.unsubscribe();
         }
         this.myLocationTimer = timer(100, 250).subscribe(response => {
-            var options = {
+            const options = {
                 enableHighAccuracy: true,
                 timeout: 200,
                 maximumAge: 100
@@ -297,7 +297,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
      * Check if spoken directions are at order.
      */
     checkForDirections() {
-        let kmLoc = new KmLocation();
+        const kmLoc = new KmLocation();
         const coordinateIndex = this.routeInfo.directions[this.stepIndex].coordinateIndex;
         kmLoc.x = this.routeInfo.kmCoordinates[coordinateIndex].x - this.myLocation.kmLoc.x;
         kmLoc.y = this.routeInfo.kmCoordinates[coordinateIndex].y - this.myLocation.kmLoc.y;

@@ -1,3 +1,5 @@
+<!-- TODO: Move all these elements to their own components:
+     RouteSummary, RouteDetails, Cities, TrafficJams, Radars -->
 <svg viewBox="-100 -100 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
     <!-- Setting the transform on the svg element is not supported by all browsers. -->
     <g transform="scale(1,-1)">
@@ -7,9 +9,9 @@
             </g>
         </g>
         <g *ngIf="null != routeAndTrafficCombo">
-            <g *ngIf="null != routeAndTrafficCombo.radarInfos">
-                <g *ngFor="let radarInfo of routeAndTrafficCombo.radarInfos">
-                    <g [attr.transform]="radarInfo.svgPosition">
+            <g *ngIf="null != routeAndTrafficCombo.radarList">
+                <g *ngFor="let radarInfo of routeAndTrafficCombo.radarList">
+                    <g [attr.transform]="radarInfo.transform">
                         <circle class="radar" cx="50.041" cy="53.256" r="9.513"/>
                         <path class="radar" d="M86.778,24.2v-0.037H70.111v-2.792c0-2.056-1.667-3.722
                             -3.722-3.722H33.611c-2.056,0-3.723,1.666-3.723,3.722v2.792H13.221V24.2
@@ -66,10 +68,10 @@
                           first="{{trafficJam.first}}" last="{{trafficJam.last}}" />
             </g>
         </g>
-</g>
+    </g>
 </svg>
 
-<svg *ngIf="(distance > 25) && (distance < 500)" class="distance" viewBox="0 0 100 100">
+<svg *ngIf="(distance > 10) && (distance < 500)" class="distance" viewBox="0 0 100 100">
     <text x="50" y="85" text-anchor="middle">{{distance}}</text>
 </svg>
 
