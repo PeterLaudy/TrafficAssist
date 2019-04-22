@@ -1,0 +1,14 @@
+svg {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    position: absolute;
+    display: block;
+    background-color: transparent;
+}
+
+circle {
+    fill: yellow;
+    opacity: 0.75;
+}

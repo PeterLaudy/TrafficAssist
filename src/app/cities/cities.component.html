@@ -1,0 +1,8 @@
+<svg:g *ngIf="null != cities">
+    <svg:g *ngFor="let city of cities">
+        <svg:g *ngIf="null != city.population">
+            <svg:circle [attr.cx]="city.svgLoc.x" [attr.cy]="city.svgLoc.y" [attr.r]="city.population/10000"></svg:circle>
+        </svg:g>
+        <svg:text transform="scale(1,-1)" [attr.x]="city.svgLoc.x" [attr.y]="-city.svgLoc.y">{{city.name}}</svg:text>
+    </svg:g>
+</svg:g>

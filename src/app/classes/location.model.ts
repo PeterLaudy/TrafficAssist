@@ -1,7 +1,7 @@
 import { GPSConverter } from './gps-converter';
 
 /**
- * @class GpsLocation
+ * Class representing a location in the GPS coordinate system.
  */
 export class GpsLocation {
     public lat: number;
@@ -9,12 +9,19 @@ export class GpsLocation {
 }
 
 /**
- * This has a few convieniance methods.
- * @class KmLocation
+ * Base class representing a location.
  */
-export class KmLocation {
+export class Location {
     public x: number;
     public y: number;
+}
+
+/**
+ * Class representing a location where the coordinates are in kilometers.
+ * It makes it easy to calculate the distance between coordinates, for
+ * which it has a few convieniance methods.
+ */
+export class KmLocation extends Location {
 
     /**
      * Calculate the distance to another location.
@@ -39,17 +46,14 @@ export class KmLocation {
 }
 
 /**
- * @class SvgLocation
+ * Class representing a location in the SVG coordinate system.
  */
-export class SvgLocation {
-    public x: number;
-    public y: number;
+export class SvgLocation extends Location {
 }
 
 /**
  * Class which also contains the accuracy of the location.
  * Used in the current location received from a device.
- * @class AccurateLocation
  */
 export class AccurateLocation {
 

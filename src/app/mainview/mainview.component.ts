@@ -3,7 +3,6 @@ import { NominatimService } from '../services/nominatim.service';
 import { OpenRouteService } from '../services/openroute.service';
 import { RouteModel } from '../classes/route.model';
 import { AnwbService } from '../services/anwb.service';
-import { TrafficModel, TrafficJam, Radar } from '../classes/traffic.model';
 import { GpsLocation, KmLocation, SvgLocation, AccurateLocation } from '../classes/location.model';
 import { OverpassService } from '../services/overpass.service';
 import { ActivatedRoute } from '@angular/router';
@@ -11,10 +10,11 @@ import { timer, Subscription } from 'rxjs';
 import { FullScreen } from '../services/full-screen.service';
 import { TalkToMeBaby } from '../services/talktomebaby.service';
 import { RouteAndTrafficCombination } from '../classes/routeandtrafficcombo';
-import { RouteDetails } from '../classes/routedetails';
-import { City } from '../classes/city';
 import { NextStep } from '../classes/nextstep';
 import { PageUnload } from '../classes/page-unload';
+import { AppState } from '../app-state';
+import { Store } from '@ngrx/store';
+import { LoadLocation } from '../actions/my-location.actions';
 
 @Component({
     selector: 'app-mainview',
@@ -24,7 +24,6 @@ import { PageUnload } from '../classes/page-unload';
 
 /**
  * The main view showing the route and other information
- * @class MainviewComponent
  */
 export class MainviewComponent extends PageUnload implements OnInit {
 
@@ -32,9 +31,6 @@ export class MainviewComponent extends PageUnload implements OnInit {
     to: string;
     fromLoc: GpsLocation;
     toLoc: GpsLocation;
-    routeInfo: RouteModel;
-    trafficInfo: TrafficModel;
-    cities: City[] = [];
 
     anwbTimer: Subscription = null;
     myLocationTimer: Subscription = null;
@@ -47,8 +43,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
     distance = 0;
     locationError = false;
 
-    routeDetails: RouteDetails;
-    routeAndTrafficCombo: RouteAndTrafficCombination;
+    routeInfo: RouteModel = null;
 
     /**
      * Create the view
@@ -58,6 +53,8 @@ export class MainviewComponent extends PageUnload implements OnInit {
      * @param overpass The service to get GeoLocation objects (cities in our case)
      * @param activatedRout The current route of the Angular routing service
      * @param fullScreen A simple wrapper around the browser fullscreen API
+     * @param speak A simple wrapper around the browser Speech Synthesis API
+     * @param store The ngrx Store component for this app
      */
     constructor(
         private nominatum: NominatimService,
@@ -67,6 +64,8 @@ export class MainviewComponent extends PageUnload implements OnInit {
         private activatedRout: ActivatedRoute,
         public fullScreen: FullScreen,
         private speak: TalkToMeBaby,
+        private store: Store<AppState>,
+        private routeAndTrafficCombo: RouteAndTrafficCombination
     ) {
         super();
     }
@@ -122,14 +121,10 @@ export class MainviewComponent extends PageUnload implements OnInit {
      */
     private cleanUp() {
         this.routeInfo = null;
-        this.trafficInfo = null;
-        this.cities = [];
-        this.routeDetails = null;
         this.fromLoc = null;
         this.toLoc = null;
         this.nextStep = null;
         this.nextInstructionToSpeak = null;
-        this.routeAndTrafficCombo = null;
         if (null != this.anwbTimer) {
             this.anwbTimer.unsubscribe();
             this.anwbTimer = null;
@@ -150,9 +145,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
     getRoute() {
         this.openRoute.getRoute(this.fromLoc, this.toLoc)
             .subscribe(result => {
-                // Store the route.
                 this.routeInfo = result;
-                this.routeAndTrafficCombo = new RouteAndTrafficCombination(this.routeInfo);
                 // Get the traffic information.
                 this.startGettingANWBInfo();
                 // Get the cities in that bounding box
@@ -161,8 +154,10 @@ export class MainviewComponent extends PageUnload implements OnInit {
                 this.startGettingMyLocation();
                 // Inialize the first instruction.
                 this.stepIndex = 0;
+                /*
                 this.nextStep = new NextStep(this.routeInfo, 0);
                 this.nextInstructionToSpeak = this.routeInfo.directions[0].instruction;
+                */
             });
     }
 
@@ -174,14 +169,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
             this.anwbTimer.unsubscribe();
         }
         this.anwbTimer = timer(1000, 30000).subscribe(response => {
-            this.anwb.getTraficInfo(this.routeInfo.converter).subscribe(traffic => {
-                // Store the result.
-                this.trafficInfo = traffic;
-                // Combine the result with the route information.
-                // The GPS coordinates of the traffic information do not
-                // fully correspond to the ones of the calculated route.
-                this.routeAndTrafficCombo.combineWithTrafficInfo(this.trafficInfo);
-            });
+            this.anwb.getTraficInfo().subscribe();
         });
     }
 
@@ -212,26 +200,14 @@ export class MainviewComponent extends PageUnload implements OnInit {
         });
         //*/
         this.overpass.getCitiesAndRouteDetails(detailLocations, this.routeInfo.gpsBBox)
-            .subscribe(result => {
-                this.cities = result.cities;
-
-                const details = new RouteDetails(this.routeInfo);
-                result.roads.forEach(road => {
-                    const svgRoad: KmLocation[] = [];
-                    road.forEach(loc => {
-                        svgRoad.push(this.routeInfo.converter.gpsToKm(loc));
-                    });
-                    details.roads.push(svgRoad);
-                });
-
-                this.routeDetails = details;
-            });
+            .subscribe();
     }
 
     /**
      * Start a demonstration of the spoken navigation.
      */
     startDemo() {
+        /*
         document.getElementById('home').hidden = true;
         document.getElementById('reverse').hidden = true;
         document.getElementById('demo').hidden = true;
@@ -250,6 +226,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
                 this.demoTimer = null;
             }
         });
+        */
     }
 
     /**
@@ -267,7 +244,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
             };
             navigator.geolocation.getCurrentPosition(position => {
                 // If the demo is running, we skip processing the location.
-                if ((null == this.demoTimer) && (null != this.routeInfo)) {
+                if (!this.demoTimer && this.routeInfo) {
                     this.locationError = false;
                     const loc = new GpsLocation();
                     loc.lon = position.coords.longitude;
@@ -286,17 +263,16 @@ export class MainviewComponent extends PageUnload implements OnInit {
      * @param accuracy The accuracy of the location in meters.
      */
     private updateLocation(loc: GpsLocation, accuracy: number) {
-        this.myLocation = new AccurateLocation(this.routeInfo.converter, loc, accuracy);
+        const location = new AccurateLocation(this.routeInfo.converter, loc, accuracy);
+        this.store.dispatch(new LoadLocation(location));
         this.checkForDirections();
-        if (null != this.routeDetails) {
-            this.routeDetails.updateDetailedLocation(this.myLocation, this.stepIndex);
-        }
     }
 
     /**
      * Check if spoken directions are at order.
      */
     checkForDirections() {
+        /*
         const kmLoc = new KmLocation();
         const coordinateIndex = this.routeInfo.directions[this.stepIndex].coordinateIndex;
         kmLoc.x = this.routeInfo.kmCoordinates[coordinateIndex].x - this.myLocation.kmLoc.x;
@@ -323,5 +299,6 @@ export class MainviewComponent extends PageUnload implements OnInit {
                 this.nextStep = null;
             }
         }
+        */
     }
 }

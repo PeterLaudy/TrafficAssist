@@ -1,5 +1,5 @@
-import { Directive, ElementRef, Input, AfterViewInit } from '@angular/core';
-import { SvgLocation } from '../classes/location.model';
+import { Directive, ElementRef, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Location } from '../classes/location.model';
 
 @Directive({
     selector: '[appPolyline]'
@@ -9,10 +9,10 @@ import { SvgLocation } from '../classes/location.model';
  * This class allows to set the points of an SVG polyline.
  * Since these are stored in the 'points' attribute, we
  * cannot use the *ngFor directive.
- * @class PolylineDirective
  */
-export class PolylineDirective implements AfterViewInit {
-    @Input('appPolyline') coordinates: SvgLocation[];
+export class PolylineDirective implements OnChanges {
+
+    @Input('appPolyline') coordinates: Location[];
     @Input() first: string;
     @Input() last: string;
 
@@ -21,9 +21,9 @@ export class PolylineDirective implements AfterViewInit {
     /**
      * This is where the actual magic happens.
      */
-    ngAfterViewInit(): void {
+    ngOnChanges(changes: SimpleChanges) {
         // We get the 3 attributes which are the coordinates to get the points from ...
-        if (this.coordinates) {
+        if (!this.coordinates) {
             return;
         }
 

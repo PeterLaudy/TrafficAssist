@@ -1,0 +1,10 @@
+line {
+    stroke-linecap: round;
+    stroke: red;
+    stroke-width: 3px;
+}
+
+path, circle {
+    fill: red;
+    animation: none;
+}

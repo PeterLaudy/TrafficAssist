@@ -1,0 +1,25 @@
+<svg *ngIf="viewbox" preserveAspectRatio="xMidYMid meet"
+     [attr.viewBox]="viewbox" width="100%" height="100%">
+    <g [attr.transform]="transform">
+        <g *ngIf="roads">
+            <g *ngFor="let road of roads">
+                <g app-road [road]="road"></g>
+            </g>
+        </g>
+        <g *ngIf="route">
+            <g app-route [lineWidth]="0.05" [lineOpacity]="0.5" [coordinates]="route.kmCoordinates"></g>
+            <g *ngIf="trafficJams">
+                <g *ngFor="let trafficJam of trafficJams">
+                    <g app-traffic-jam [trafficJam]="trafficJam" [routeCoordinates]="route.kmCoordinates"></g>
+                </g>
+            </g>
+        </g>
+        <g *ngIf="myLocation$ | async as myLocation">
+            <circle [attr.cx]="myLocation.kmLoc.x"  [attr.cy]="myLocation.kmLoc.y" r="0.06"></circle>
+        </g>
+    </g>
+</svg>
+
+<svg *ngIf="(distance > 10) && (distance < 500)" class="distance" viewBox="0 0 100 100">
+    <text x="50" y="85" text-anchor="middle">{{distance}}</text>
+</svg>

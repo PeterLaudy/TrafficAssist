@@ -6,6 +6,9 @@ import { map } from 'rxjs/operators';
 import { GPSConverter } from '../classes/gps-converter';
 import { GpsLocation, KmLocation, SvgLocation } from '../classes/location.model';
 import { RouteModel, StepInfo } from '../classes/route.model';
+import { AppState } from '../app-state';
+import * as fromRouteActions from '../actions/route.actions';
+import { Store } from '@ngrx/store';
 
 @Injectable()
 
@@ -27,7 +30,7 @@ export class OpenRouteService {
      */
     private key: string;
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private store: Store<AppState>) { }
 
     /**
      * Gets the API key from the server. This is not safe of course,
@@ -62,7 +65,7 @@ export class OpenRouteService {
         return this.http.get<OpenRouteModel>(url)
             .pipe(
                 map(openRoute => {
-                    let result = new RouteModel();
+                    const result = new RouteModel();
                     result.converter = new GPSConverter(openRoute.bbox);
 
                     result.gpsBBox = openRoute.bbox;
@@ -70,9 +73,9 @@ export class OpenRouteService {
                     result.svgBBox = result.converter.bBoxKmToSvg(result.kmBBox);
                     result.gpsCoordinates = [];
                     for (const feature of openRoute.features) {
-                        let coordinateOffset = result.gpsCoordinates.length;
+                        const coordinateOffset = result.gpsCoordinates.length;
                         for (const coordinate of feature.geometry.coordinates) {
-                            const gps = new GpsLocation;
+                            const gps = new GpsLocation();
                             gps.lon = coordinate[0];
                             gps.lat = coordinate[1];
                             result.gpsCoordinates.push(gps);
@@ -81,7 +84,7 @@ export class OpenRouteService {
                         }
                         for (const segment of feature.properties.segments) {
                             for (const step of segment.steps) {
-                                let nextStep = new StepInfo;
+                                const nextStep = new StepInfo();
                                 nextStep.coordinateIndex = step.way_points[0] + coordinateOffset;
                                 nextStep.name = step.name;
                                 nextStep.instruction = step.instruction;
@@ -91,6 +94,8 @@ export class OpenRouteService {
                             }
                         }
                     }
+
+                    this.store.dispatch(new fromRouteActions.LoadRoute(result));
                     return result;
                 })
         );

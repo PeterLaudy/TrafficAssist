@@ -89,30 +89,6 @@ svg.distance text {
     animation: none;
 }
 
-polyline.detail {
-    stroke: green;
-    stroke-width: 0.05px;
-    opacity: 0.25;
-}
-
-polyline.traffic-detail {
-    stroke: red;
-    stroke-width: 0.06px;
-    opacity: 0.75;
-}
-
-polyline.route-detail {
-    stroke: blue;
-    stroke-width: 0.05px;
-    opacity: 0.5;
-}
-
-circle.route-detail {
-    fill: yellow;
-    animation: none;
-    opacity: 0.75;
-}
-
 @keyframes fade-in {
     0% { opacity: 0; }
     100% { opacity: 1; }
@@ -145,11 +121,6 @@ polyline.traffic-info {
     animation: fade-in 1s ease-out;
 }
 
-circle {
-    fill: darkgoldenrod;
-    animation: grow 1s ease-out;
-}
-
 circle.me {
     fill: yellow;
     animation: size 1s ease-out;
@@ -158,17 +129,6 @@ circle.me {
 circle.accuracy {
     fill: black;
     opacity: 0.1;
-    animation: none;
-}
-
-line.radar {
-    stroke-linecap: round;
-    stroke: red;
-    stroke-width: 3px;
-}
-
-path.radar, circle.radar {
-    fill: red;
     animation: none;
 }
 

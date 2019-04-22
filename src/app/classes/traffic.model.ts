@@ -1,7 +1,7 @@
 import { GpsLocation, KmLocation, SvgLocation } from '../classes/location.model';
 
 /**
- * @class BaseEvent
+ * Class representing a base event refence in the traffic model.
  */
 export class BaseEvent {
     from: string;
@@ -22,7 +22,7 @@ export class BaseEvent {
 }
 
 /**
- * @class TrafficJam
+ * Class representing a traffic jam refence in the traffic model.
  */
 export class TrafficJam extends BaseEvent {
     location: string;
@@ -31,7 +31,7 @@ export class TrafficJam extends BaseEvent {
 }
 
 /**
- * @class RoadWork
+ * Class representing a road work refence in the traffic model.
  */
 export class RoadWork extends BaseEvent {
     location: string;
@@ -42,7 +42,7 @@ export class RoadWork extends BaseEvent {
 }
 
 /**
- * @class Radar
+ * Class representing a radar refence in the traffic model.
  */
 export class Radar extends BaseEvent {
     location: string;
@@ -55,7 +55,7 @@ export class Radar extends BaseEvent {
 }
 
 /**
- * @class RoadEntry
+ * Class representing a road refence in the traffic model.
  */
 export class RoadEntry {
     name: string;
@@ -66,7 +66,7 @@ export class RoadEntry {
 }
 
 /**
- * @class TrafficModel
+ * Class representing the traffic model.
  */
 export class TrafficModel {
     dateTime: string;

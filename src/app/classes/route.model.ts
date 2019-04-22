@@ -2,7 +2,7 @@ import { GPSConverter } from '../classes/gps-converter';
 import { GpsLocation, KmLocation, SvgLocation } from '../classes/location.model';
 
 /**
- * @class StepInfo
+ * Class to keep track of the current spoken instruction.
  */
 export class StepInfo {
     coordinateIndex: number;
@@ -13,7 +13,7 @@ export class StepInfo {
 }
 
 /**
- * @class RouteModel
+ * Class representing the model of the route.
  */
 export class RouteModel {
     gpsBBox: number[];

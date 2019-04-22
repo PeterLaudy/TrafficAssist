@@ -1,22 +1,44 @@
 import { TrafficModel, Radar, TrafficJam } from './traffic.model';
 import { RouteModel } from './route.model';
 import { KmLocation } from './location.model';
+import { Observable } from 'rxjs';
+import { AppState } from '../app-state';
+import { Store } from '@ngrx/store';
+import * as fromTrafficJamsActions from '../actions/traffic-jams.actions';
+import * as fromRadarsActions from '../actions/radars.actions';
+import { Injectable } from '@angular/core';
+
+@Injectable()
 
 /**
  * Class which combines the route and traffic information.
  * Since these (may) come from different servers, the GPS
  * locations might not always be 100% spot on. So we make
  * the comparisons a bit loose.
- * @class RouteAndTrafficCombination
  */
 export class RouteAndTrafficCombination {
 
-    trafficJamList: TrafficJam[];
-    radarList: Radar[];
+    route$: Observable<RouteModel>;
+    traffic$: Observable<TrafficModel>;
 
-    constructor(public route: RouteModel) { }
+    route: RouteModel;
 
-    combineWithTrafficInfo(traffic: TrafficModel) {
+    constructor(private store: Store<AppState>) {
+        this.route$ = this.store.select(s => s.route);
+        this.traffic$ = this.store.select(s => s.traffic);
+
+        this.route$.subscribe(route => {
+            this.route = route;
+        });
+
+        this.traffic$.subscribe(traffic => {
+            if (null != this.route) {
+                this.combineWithTrafficInfo(traffic);
+            }
+        });
+    }
+
+    private combineWithTrafficInfo(traffic: TrafficModel) {
         this.combineRouteAndTraffic(traffic);
         this.combineRouteAndRadar(traffic);
     }
@@ -25,13 +47,19 @@ export class RouteAndTrafficCombination {
      * Get the segments of the calculated route where there is a traffic jam.
      */
     private combineRouteAndTraffic(traffic: TrafficModel) {
-        this.trafficJamList = [];
+        const trafficJamList: TrafficJam[] = [];
         for (const road of traffic.roadEntries) {
             for (const trafficJam of road.trafficJams) {
+
+                trafficJam.kmFromLoc = this.route.converter.gpsToKm(trafficJam.gpsFromLoc);
+                trafficJam.kmToLoc = this.route.converter.gpsToKm(trafficJam.gpsToLoc);
+                trafficJam.svgFromLoc = this.route.converter.kmToSvg(trafficJam.kmFromLoc);
+                trafficJam.svgToLoc = this.route.converter.kmToSvg(trafficJam.kmToLoc);
+
                 // Get the nearest coordinates for the start and end of the traffic jam.
                 const first = this.getNearestCoordinate(trafficJam.kmFromLoc);
                 const last = this.getNearestCoordinate(trafficJam.kmToLoc);
-                
+
                 // Is one of the two is on the route, we assume the taffic jam is.
                 // This will include traffic jams wich are partially on our route.
                 const isOnRoute = this.isOnSegment(trafficJam.kmFromLoc, first) || this.isOnSegment(trafficJam.kmToLoc, last);
@@ -41,7 +69,7 @@ export class RouteAndTrafficCombination {
                     if (isOnRoute) {
                         trafficJam.first = first;
                         trafficJam.last =  last;
-                        this.trafficJamList.push(trafficJam);
+                        trafficJamList.push(trafficJam);
                     }
                 } else {
                     if (isOnRoute) {
@@ -50,15 +78,24 @@ export class RouteAndTrafficCombination {
                 }
             }
         }
+
+        this.store.dispatch(new fromTrafficJamsActions.LoadTrafficJams(trafficJamList));
     }
 
     /**
      * Get the segments of the calculated route where there is a speed camera is set up.
      */
     private combineRouteAndRadar(traffic: TrafficModel) {
-        this.radarList = [];
+        const radarList: Radar[] = [];
         for (const road of traffic.roadEntries) {
             for (const radar of road.radars) {
+                radar.kmFromLoc = this.route.converter.gpsToKm(radar.gpsFromLoc);
+                radar.kmToLoc = this.route.converter.gpsToKm(radar.gpsToLoc);
+                radar.svgFromLoc = this.route.converter.kmToSvg(radar.kmFromLoc);
+                radar.svgToLoc = this.route.converter.kmToSvg(radar.kmToLoc);
+                radar.kmLoc = this.route.converter.gpsToKm(radar.gpsLoc);
+                radar.svgLoc = this.route.converter.kmToSvg(radar.kmLoc);
+
                 // Get the nearest coordinate to the camera location ...
                 const index: number = this.getNearestCoordinate(radar.kmLoc);
 
@@ -67,19 +104,21 @@ export class RouteAndTrafficCombination {
                     // Get the nearest coordinates for the start and end of
                     // road section where the camera is set up.
                     const first = this.getNearestCoordinate(radar.kmFromLoc);
-                    const last = this.getNearestCoordinate(radar.kmToLoc)
+                    const last = this.getNearestCoordinate(radar.kmToLoc);
 
                     // Also check if the camera is not set up in the opposite direction.
                     if (first < last) {
                         radar.first = first;
                         radar.last = last;
-                        this.radarList.push(radar);
+                        radarList.push(radar);
                     } else {
                         console.log(`Wrong direction! ${radar.description}`);
                     }
                 }
             }
         }
+
+        this.store.dispatch(new fromRadarsActions.LoadTrafficRadars(radarList));
     }
 
     /**
@@ -113,7 +152,7 @@ export class RouteAndTrafficCombination {
                 result = i;
             }
         }
-        if (this.route.kmCoordinates.length - 1 == result) {
+        if (this.route.kmCoordinates.length - 1 === result) {
             result--;
         }
         return result;

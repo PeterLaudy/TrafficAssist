@@ -1,0 +1,21 @@
+<svg viewBox="-100 -100 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <!-- Setting the transform on the svg element is not supported by all browsers. -->
+    <g transform="scale(1,-1)">
+        <g *ngIf="cities$ | async as cities">
+            <g app-cities [cities]="cities"></g>
+        </g>
+        <g *ngIf="route$ | async as route">
+            <g app-route [coordinates]="route.svgCoordinates"></g>
+            <g *ngIf="trafficJams$ | async as trafficJams">
+                <g *ngFor="let trafficJam of trafficJams">
+                    <g app-traffic-jam [trafficJam]="trafficJam" [routeCoordinates]="route.svgCoordinates"></g>
+                </g>
+            </g>
+        </g>
+        <g *ngIf="radars$ | async as radars">
+            <g *ngFor="let radar of radars">
+                <g app-radar [radar]="radar"></g>
+            </g>
+        </g>
+    </g>
+</svg>

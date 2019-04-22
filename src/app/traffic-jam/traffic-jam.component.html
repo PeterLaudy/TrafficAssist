@@ -1,0 +1,6 @@
+<svg:g *ngIf="trafficJam && routeCoordinates">
+    <svg:polyline [appPolyline]="routeCoordinates"
+                  first="{{trafficJam.first}}"
+                  last="{{trafficJam.last}}">
+    </svg:polyline>
+</svg:g>

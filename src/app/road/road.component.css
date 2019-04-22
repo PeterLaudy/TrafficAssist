@@ -1,0 +1,7 @@
+polyline {
+    stroke: green;
+    stroke-width: 0.05px;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0.25;
+}

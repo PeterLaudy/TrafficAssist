@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit, AfterViewInit  {
     constructor(private router: Router, private activatedRout: ActivatedRoute) { }
 
     /**
-     * 
+     * Initialize the page.
      */
     ngOnInit() {
         // Get the URL parameters containing the addresses between which the route must be calculated.
