@@ -12,4 +12,5 @@ export interface AppState {
     trafficJams: TrafficJam[];
     radars: Radar[];
     nextStep: number;
+    locationError: boolean;
 }

@@ -5,6 +5,8 @@ import { trafficReducer } from './traffic.reducer';
 import { routeReducer } from './route.reducer';
 import { trafficJamsReducer } from './traffic-jams.reducer';
 import { radarsReducer } from './radars.reducer';
+import { nextStepReducer } from './nextStep.reducer';
+import { locationErrorReducer } from './locationError.reducer';
 
 export const appReducer  = {
     cities : citiesReducer,
@@ -13,5 +15,7 @@ export const appReducer  = {
     route : routeReducer,
     traffic: trafficReducer,
     trafficJams: trafficJamsReducer,
-    radars: radarsReducer
+    radars: radarsReducer,
+    nextStep: nextStepReducer,
+    locationError: locationErrorReducer
 };

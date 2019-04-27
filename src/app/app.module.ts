@@ -24,7 +24,9 @@ import { StoreModule } from '@ngrx/store';
 import { StoreRouterConnectingModule } from '@ngrx/router-store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { appReducer } from './reducers/reducers';
-import { RouteAndTrafficCombination } from './classes/routeandtrafficcombo';
+import { RouteAndTrafficCombination } from './services/routeandtrafficcombo';
+import { LocationService } from './services/location.service';
+import { DirectionsService } from './services/directions.service';
 
 @NgModule({
     declarations: [
@@ -58,7 +60,9 @@ import { RouteAndTrafficCombination } from './classes/routeandtrafficcombo';
         TalkToMeBaby,
         FullScreen,
         CanDeactivatePage,
-        RouteAndTrafficCombination
+        RouteAndTrafficCombination,
+        LocationService,
+        DirectionsService
     ],
     bootstrap: [AppComponent],
     schemas: [

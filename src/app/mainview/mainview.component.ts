@@ -1,20 +1,17 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NominatimService } from '../services/nominatim.service';
 import { OpenRouteService } from '../services/openroute.service';
 import { RouteModel } from '../classes/route.model';
 import { AnwbService } from '../services/anwb.service';
-import { GpsLocation, KmLocation, SvgLocation, AccurateLocation } from '../classes/location.model';
+import { GpsLocation, AccurateLocation } from '../classes/location.model';
 import { OverpassService } from '../services/overpass.service';
 import { ActivatedRoute } from '@angular/router';
 import { timer, Subscription } from 'rxjs';
 import { FullScreen } from '../services/full-screen.service';
-import { TalkToMeBaby } from '../services/talktomebaby.service';
-import { RouteAndTrafficCombination } from '../classes/routeandtrafficcombo';
-import { NextStep } from '../classes/nextstep';
 import { PageUnload } from '../classes/page-unload';
 import { AppState } from '../app-state';
 import { Store } from '@ngrx/store';
-import { LoadLocation } from '../actions/my-location.actions';
+import { LocationService } from '../services/location.service';
 
 @Component({
     selector: 'app-mainview',
@@ -33,13 +30,8 @@ export class MainviewComponent extends PageUnload implements OnInit {
     toLoc: GpsLocation;
 
     anwbTimer: Subscription = null;
-    myLocationTimer: Subscription = null;
     myLocation: AccurateLocation;
-    demoTimer: Subscription = null;
 
-    stepIndex = 0;
-    nextStep: NextStep;
-    nextInstructionToSpeak: string = null;
     distance = 0;
     locationError = false;
 
@@ -53,7 +45,6 @@ export class MainviewComponent extends PageUnload implements OnInit {
      * @param overpass The service to get GeoLocation objects (cities in our case)
      * @param activatedRout The current route of the Angular routing service
      * @param fullScreen A simple wrapper around the browser fullscreen API
-     * @param speak A simple wrapper around the browser Speech Synthesis API
      * @param store The ngrx Store component for this app
      */
     constructor(
@@ -63,9 +54,8 @@ export class MainviewComponent extends PageUnload implements OnInit {
         private overpass: OverpassService,
         private activatedRout: ActivatedRoute,
         public fullScreen: FullScreen,
-        private speak: TalkToMeBaby,
+        private locationService: LocationService,
         private store: Store<AppState>,
-        private routeAndTrafficCombo: RouteAndTrafficCombination
     ) {
         super();
     }
@@ -123,19 +113,9 @@ export class MainviewComponent extends PageUnload implements OnInit {
         this.routeInfo = null;
         this.fromLoc = null;
         this.toLoc = null;
-        this.nextStep = null;
-        this.nextInstructionToSpeak = null;
         if (null != this.anwbTimer) {
             this.anwbTimer.unsubscribe();
             this.anwbTimer = null;
-        }
-        if (null != this.myLocationTimer) {
-            this.myLocationTimer.unsubscribe();
-            this.myLocationTimer = null;
-        }
-        if (null != this.demoTimer) {
-            this.demoTimer.unsubscribe();
-            this.demoTimer = null;
         }
     }
 
@@ -150,14 +130,6 @@ export class MainviewComponent extends PageUnload implements OnInit {
                 this.startGettingANWBInfo();
                 // Get the cities in that bounding box
                 this.getCitiesAndRouteDetails();
-                // Get the location of the device.
-                this.startGettingMyLocation();
-                // Inialize the first instruction.
-                this.stepIndex = 0;
-                /*
-                this.nextStep = new NextStep(this.routeInfo, 0);
-                this.nextInstructionToSpeak = this.routeInfo.directions[0].instruction;
-                */
             });
     }
 
@@ -203,102 +175,7 @@ export class MainviewComponent extends PageUnload implements OnInit {
             .subscribe();
     }
 
-    /**
-     * Start a demonstration of the spoken navigation.
-     */
     startDemo() {
-        /*
-        document.getElementById('home').hidden = true;
-        document.getElementById('reverse').hidden = true;
-        document.getElementById('demo').hidden = true;
-        let currentLocation = 0;
-        this.stepIndex = 0;
-        this.nextStep = new NextStep(this.routeInfo, 0);
-        this.nextInstructionToSpeak = this.routeInfo.directions[0].instruction;
-        this.demoTimer = timer(100, 250).subscribe(response => {
-            const loc = this.routeInfo.gpsCoordinates[currentLocation];
-            this.updateLocation(loc, 25);
-            if (++currentLocation === this.routeInfo.gpsCoordinates.length) {
-                document.getElementById('home').hidden = false;
-                document.getElementById('reverse').hidden = false;
-                document.getElementById('demo').hidden = false;
-                this.demoTimer.unsubscribe();
-                this.demoTimer = null;
-            }
-        });
-        */
-    }
-
-    /**
-     * Start a timer which gets the devices GPS location at an interval of 0.25 seconds.
-     */
-    startGettingMyLocation() {
-        if (null != this.myLocationTimer) {
-            this.myLocationTimer.unsubscribe();
-        }
-        this.myLocationTimer = timer(100, 250).subscribe(response => {
-            const options = {
-                enableHighAccuracy: true,
-                timeout: 200,
-                maximumAge: 100
-            };
-            navigator.geolocation.getCurrentPosition(position => {
-                // If the demo is running, we skip processing the location.
-                if (!this.demoTimer && this.routeInfo) {
-                    this.locationError = false;
-                    const loc = new GpsLocation();
-                    loc.lon = position.coords.longitude;
-                    loc.lat = position.coords.latitude;
-                    this.updateLocation(loc, position.coords.accuracy);
-                }
-            }, error => {
-                this.locationError = true;
-            }, options);
-        });
-    }
-
-    /**
-     * Update the location, check for directions and update the detailed map.
-     * @param loc The new location of the device.
-     * @param accuracy The accuracy of the location in meters.
-     */
-    private updateLocation(loc: GpsLocation, accuracy: number) {
-        const location = new AccurateLocation(this.routeInfo.converter, loc, accuracy);
-        this.store.dispatch(new LoadLocation(location));
-        this.checkForDirections();
-    }
-
-    /**
-     * Check if spoken directions are at order.
-     */
-    checkForDirections() {
-        /*
-        const kmLoc = new KmLocation();
-        const coordinateIndex = this.routeInfo.directions[this.stepIndex].coordinateIndex;
-        kmLoc.x = this.routeInfo.kmCoordinates[coordinateIndex].x - this.myLocation.kmLoc.x;
-        kmLoc.y = this.routeInfo.kmCoordinates[coordinateIndex].y - this.myLocation.kmLoc.y;
-        const prevDistance = this.distance;
-        this.distance = Math.round(Math.sqrt(kmLoc.x * kmLoc.x + kmLoc.y * kmLoc.y) * 1000);
-
-        // Any instructions are only spoken once, as soon as the distance
-        // to the location they apply to is 300 meters or less.
-        if ((300 >= this.distance) && (null != this.nextInstructionToSpeak)) {
-            console.log(this.nextInstructionToSpeak);
-            this.speak.sayIt(this.nextInstructionToSpeak);
-            this.nextInstructionToSpeak = null;
-        }
-
-        // Here we check if we have reached the location of the last spoken instruction.
-        // If so, we focus on the next one.
-        while ((null != this.nextStep) && this.nextStep.hasPassedNextStep(this.myLocation.kmLoc)) {
-            this.stepIndex++;
-            this.nextInstructionToSpeak = this.routeInfo.directions[this.stepIndex].instruction;
-            if (this.stepIndex < this.routeInfo.directions.length - 1) {
-                this.nextStep = new NextStep(this.routeInfo, this.stepIndex);
-            } else {
-                this.nextStep = null;
-            }
-        }
-        */
+        this.locationService.startDemo();
     }
 }

@@ -4,7 +4,6 @@ import { RouteModel } from './route.model';
 /**
  * Class which tries to keep track of where we are with respect to
  * the steps which make up the route.
- * @class NextStep
  */
 export class NextStep {
 
@@ -88,8 +87,8 @@ export class NextStep {
          */
         if (this.routeInfo.directions.length - this.stepIndex > 5) {
             for (let i = this.stepIndex + 5; i < this.routeInfo.directions.length - 1; i++) {
-                let stepLoc = this.routeInfo.kmCoordinates[this.routeInfo.directions[i].coordinateIndex];
-                let nextStepLoc = this.routeInfo.kmCoordinates[this.routeInfo.directions[i + 1].coordinateIndex];
+                const stepLoc = this.routeInfo.kmCoordinates[this.routeInfo.directions[i].coordinateIndex];
+                const nextStepLoc = this.routeInfo.kmCoordinates[this.routeInfo.directions[i + 1].coordinateIndex];
                 const stepDif = stepLoc.distance(nextStepLoc);
                 if ((location.distance(stepLoc) < stepDif) && (location.distance(nextStepLoc) < stepDif)) {
                     return true;

@@ -1,12 +1,12 @@
-import { TrafficModel, Radar, TrafficJam } from './traffic.model';
-import { RouteModel } from './route.model';
-import { KmLocation } from './location.model';
-import { Observable } from 'rxjs';
+import { TrafficModel, Radar, TrafficJam } from '../classes/traffic.model';
+import { RouteModel } from '../classes/route.model';
+import { KmLocation } from '../classes/location.model';
+import { Observable, Subscription } from 'rxjs';
 import { AppState } from '../app-state';
 import { Store } from '@ngrx/store';
 import * as fromTrafficJamsActions from '../actions/traffic-jams.actions';
 import * as fromRadarsActions from '../actions/radars.actions';
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
 @Injectable()
 
@@ -16,10 +16,13 @@ import { Injectable } from '@angular/core';
  * locations might not always be 100% spot on. So we make
  * the comparisons a bit loose.
  */
-export class RouteAndTrafficCombination {
+export class RouteAndTrafficCombination implements OnDestroy {
 
     route$: Observable<RouteModel>;
     traffic$: Observable<TrafficModel>;
+
+    routeSubscription: Subscription;
+    trafficSubscription: Subscription;
 
     route: RouteModel;
 
@@ -27,15 +30,22 @@ export class RouteAndTrafficCombination {
         this.route$ = this.store.select(s => s.route);
         this.traffic$ = this.store.select(s => s.traffic);
 
-        this.route$.subscribe(route => {
+        this.routeSubscription = this.route$.subscribe(route => {
             this.route = route;
+            this.store.dispatch(new fromTrafficJamsActions.LoadTrafficJams(null));
+            this.store.dispatch(new fromRadarsActions.LoadTrafficRadars(null));
         });
 
-        this.traffic$.subscribe(traffic => {
+        this.trafficSubscription = this.traffic$.subscribe(traffic => {
             if (null != this.route) {
                 this.combineWithTrafficInfo(traffic);
             }
         });
+    }
+
+    ngOnDestroy() {
+        this.routeSubscription.unsubscribe();
+        this.trafficSubscription.unsubscribe();
     }
 
     private combineWithTrafficInfo(traffic: TrafficModel) {
